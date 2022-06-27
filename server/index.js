@@ -6,14 +6,16 @@ app.use(express.json());
 
 database.connect();
 database.newEntry([[
-    2,
+    5,
     'My Second Entry',
     'This is my second entry',
     'A test to verify my sql queries',
     '20220626',
     '20220626',
-    'PROJECT'
+    'BLOG'
 ]]);
+
+database.getByType('PROJECT');
 
 app.listen(8000, () => {
     console.log('Listening');

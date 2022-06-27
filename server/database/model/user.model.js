@@ -6,7 +6,7 @@
  * -Content
  * -Date Created
  * -Date Edited
- * -Role (Project or Blog)
+ * -Type (Project, Blog, or something else)
  * */
 
 // Get environment variables
@@ -33,13 +33,24 @@ exports.connect = () => {
     });
 };
 
-exports.newEntry = (entry) => {
-    const sql = 'INSERT INTO webpage (id, title, description, content, date_created, date_edited, role) VALUES ?';
-    const values = entry;
+// Create entry
+exports.newEntry = (values) => {
+    const sql = 'INSERT INTO webpage (ID, TITLE, DESCRIPTION, CONTENT, DATE_CREATED, DATE_EDITED, TYPE) VALUES ?';
 
     database.query(sql, [values], (err, results) => {
         if (err) throw err;
 
-        console.log('Data submitted: ' + results);
+        console.log('Data submitted.');
+    });
+};
+
+// Read database
+exports.getByType = (value) => {
+    const sql = `SELECT * FROM webpage WHERE TYPE = '${value}'`;
+
+    database.query(sql, (err, results) => {
+        if (err) throw err;
+
+        console.log(results);
     });
 };
