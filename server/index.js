@@ -1,4 +1,4 @@
-const database = require('./database/model/post.model');
+const database = require('./database/model/content.model');
 const express = require('express');
 
 const app = express();
