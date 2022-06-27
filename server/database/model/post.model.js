@@ -34,8 +34,8 @@ exports.connect = () => {
 };
 
 // Create entry
-exports.newEntry = (values) => {
-    const sql = 'INSERT INTO webpage (ID, TITLE, DESCRIPTION, CONTENT, DATE_CREATED, DATE_EDITED, TYPE) VALUES ?';
+exports.newEntry = (values, table) => {
+    const sql = `INSERT INTO ${table} (ID, TITLE, DESCRIPTION, CONTENT, DATE_CREATED, DATE_EDITED) VALUES ?`;
 
     database.query(sql, [values], (err, results) => {
         if (err) throw err;
@@ -45,8 +45,8 @@ exports.newEntry = (values) => {
 };
 
 // Read database
-exports.getByType = (type) => {
-    const sql = `SELECT * FROM webpage WHERE TYPE = '${type}'`;
+exports.getByTable = (table) => {
+    const sql = `SELECT * FROM ${table}`;
 
     database.query(sql, (err, results) => {
         if (err) throw err;
@@ -56,11 +56,11 @@ exports.getByType = (type) => {
 };
 
 // Update database
-exports.patchById = (cols, values, id) => {
+exports.patchById = (table, cols, values, id) => {
     cols.forEach((col, idx) => {
         if (col === 'ID') return; // Do not allow for changing id
 
-        const sql = `UPDATE webpage SET ${col} = '${values[idx]}' WHERE ID = ${id}`;
+        const sql = `UPDATE ${table} SET ${col} = '${values[idx]}' WHERE ID = ${id}`;
         database.query(sql, (err, results) => {
             if (err) throw err;
 
@@ -70,8 +70,8 @@ exports.patchById = (cols, values, id) => {
 };
 
 // Delete entry
-exports.removeById = (id) => {
-    const sql = `DELETE FROM webpage WHERE ID = ${id}`;
+exports.removeById = (table, id) => {
+    const sql = `DELETE FROM ${table} WHERE ID = ${id}`;
 
     database.query(sql, (err, results) => {
         if (err) throw err;
