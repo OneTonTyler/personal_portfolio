@@ -45,12 +45,37 @@ exports.newEntry = (values) => {
 };
 
 // Read database
-exports.getByType = (value) => {
-    const sql = `SELECT * FROM webpage WHERE TYPE = '${value}'`;
+exports.getByType = (type) => {
+    const sql = `SELECT * FROM webpage WHERE TYPE = '${type}'`;
 
     database.query(sql, (err, results) => {
         if (err) throw err;
 
         console.log(results);
+    });
+};
+
+// Update database
+exports.patchById = (cols, values, id) => {
+    cols.forEach((col, idx) => {
+        if (col === 'ID') return; // Do not allow for changing id
+
+        const sql = `UPDATE webpage SET ${col} = '${values[idx]}' WHERE ID = ${id}`;
+        database.query(sql, (err, results) => {
+            if (err) throw err;
+
+            console.log(`Column ${col} updated to ${values[idx]}`);
+        });
+    });
+};
+
+// Delete entry
+exports.removeById = (id) => {
+    const sql = `DELETE FROM webpage WHERE ID = ${id}`;
+
+    database.query(sql, (err, results) => {
+        if (err) throw err;
+
+        console.log('Entry deleted.');
     });
 };
