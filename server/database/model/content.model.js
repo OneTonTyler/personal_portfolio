@@ -34,13 +34,17 @@ exports.connect = () => {
 };
 
 // Create entry
-exports.newEntry = (values, table) => {
+exports.newEntry = (table, values) => {
     const sql = `INSERT INTO ${table} (ID, TITLE, DESCRIPTION, CONTENT, DATE_CREATED, DATE_EDITED) VALUES ?`;
 
-    database.query(sql, [values], (err, results) => {
-        if (err) throw err;
+    return new Promise((resolve, reject) => {
+        database.query(sql, [values], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
 
-        console.log('Data submitted.');
+            resolve(results);
+        });
     });
 };
 
@@ -48,23 +52,35 @@ exports.newEntry = (values, table) => {
 exports.getByTable = (table) => {
     const sql = `SELECT * FROM ${table}`;
 
-    database.query(sql, (err, results) => {
-        if (err) throw err;
+    return new Promise((resolve, reject) => {
+        database.query(sql, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
 
-        console.log(results);
+            resolve(results)
+        });
     });
 };
 
 // Update database
 exports.patchById = (table, cols, values, id) => {
-    cols.forEach((col, idx) => {
-        if (col === 'ID') return; // Do not allow for changing id
+    const idx = cols.length;
+    const entries = [];
 
-        const sql = `UPDATE ${table} SET ${col} = '${values[idx]}' WHERE ID = ${id}`;
+    for (let i = 0; i < idx; i++) {
+        entries.push(`${cols[i]} = '${values[i]}'`)
+    }
+
+    return new Promise((resolve, reject) => {
+        const sql = `UPDATE ${table} SET ${entries.join(', ')} WHERE ID = ${id}`;
+
         database.query(sql, (err, results) => {
-            if (err) throw err;
+            if (err) {
+                return reject(err);
+            }
 
-            console.log(`Column ${col} updated to ${values[idx]}`);
+            resolve(results);
         });
     });
 };
@@ -73,9 +89,13 @@ exports.patchById = (table, cols, values, id) => {
 exports.removeById = (table, id) => {
     const sql = `DELETE FROM ${table} WHERE ID = ${id}`;
 
-    database.query(sql, (err, results) => {
-        if (err) throw err;
+    return new Promise((resolve, reject) => {
+        database.query(sql, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
 
-        console.log('Entry deleted.');
+            resolve(results);
+        });
     });
 };
