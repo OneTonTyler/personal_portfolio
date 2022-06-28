@@ -2,19 +2,19 @@
 const ContentController = require('./controllers/content.controller');
 
 exports.routes_config = (app) => {
-    app.get('/foo', [
+    app.get('/api', [
         ContentController.list
     ]);
 
-    app.post('/foo', [
+    app.post('/api', [
         ContentController.insert
     ]);
 
-    app.patch('/foo', [
+    app.patch('/api', [
         ContentController.patchById
     ]);
 
-    app.delete('/foo', [
+    app.delete('/api', [
         ContentController.removeById
     ]);
 };
