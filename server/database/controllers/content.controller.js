@@ -11,7 +11,7 @@ exports.insert = async (req, res) => {
 
     await ContentModel.newEntry(table_name, [values])
         .then((results) => {
-            res.status(200).send({message: results});
+            res.status(201).send({message: results});
         })
         .catch((err) => {
             res.status(400).send({errorMessage: err});
