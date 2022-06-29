@@ -9,7 +9,9 @@ class Projects extends Component {
 
     componentDidMount() {
         this.callBackendApi()
-            .then(res => this.setState({ data: res.message }))
+            .then(res => {
+                this.setState({data: res.message});
+            })
             .catch(err => console.log(err));
     };
 
@@ -27,11 +29,22 @@ class Projects extends Component {
         const projects = this.state.data;
 
         return projects.map(project => {
+
+            const {
+                ID: id,
+                TITLE: title,
+                DESCRIPTION: description,
+                CONTENT: content,
+                DATE_CREATED: date_created,
+                DATE_EDITED: date_edited } = project;
+
             return [
-                <div key={project['ID']}>
-                    <p>Title: {project['TITLE']}</p>
-                    <p>Description: {project['DESCRIPTION']}</p>
-                    <p>Content: {project['CONTENT']}</p>
+                <div key={id}>
+                    <p>Title: {title}</p>
+                    <p>Description: {description}</p>
+                    <p>Content: {content}</p>
+                    <p>Date Created: {date_created}</p>
+                    <p>Date Edited: {date_edited}</p>
                     <br />
                 </div>
             ];
