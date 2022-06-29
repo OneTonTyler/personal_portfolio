@@ -20,7 +20,7 @@ exports.insert = async (req, res) => {
 
 // List all entries
 exports.list = async (req, res) => {
-    const table_name = req.body.table;
+    const table_name = req.query.table;
 
     await ContentModel.getByTable(table_name)
         .then((results) => {
