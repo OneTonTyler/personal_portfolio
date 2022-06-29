@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import './projects.css';
 
 class Projects extends Component {
-    state = {
-        data: []
+    constructor(props) {
+        super(props);
+        this.state = { data: [] }
     };
 
     componentDidMount() {
@@ -13,7 +14,7 @@ class Projects extends Component {
     };
 
     callBackendApi = async () => {
-        const response = await fetch('http://localhost:8000/api?table=Projects');
+        const response = await fetch('/api?table=Projects');
         const body = await response.json();
 
         if (response.status !== 200) {
@@ -22,16 +23,27 @@ class Projects extends Component {
         return body
     };
 
+    renderProjects = () => {
+        const projects = this.state.data;
+
+        return projects.map(project => {
+            return [
+                <div key={project['ID']}>
+                    <p>Title: {project['TITLE']}</p>
+                    <p>Description: {project['DESCRIPTION']}</p>
+                    <p>Content: {project['CONTENT']}</p>
+                    <br />
+                </div>
+            ];
+        });
+    }
+
     render() {
+        const renderProjects = this.renderProjects();
+
         return (
             <div>
-                <p>New State!</p>
-                { this.state.data.map(element =>
-                    <p key={element['ID']}>
-                        {element['TITLE']}, {element['DESCRIPTION']}, {element['CONTENT']}
-                    </p>)
-                }
-                <p>End</p>
+                {renderProjects}
             </div>
         );
     };
