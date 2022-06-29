@@ -18,7 +18,7 @@ class Projects extends Component {
         const body = await response.json();
 
         if (response.status !== 200) {
-            throw Error(body.message)
+            throw Error(body.errorMessage);
         }
         return body
     };
@@ -36,14 +36,12 @@ class Projects extends Component {
                 </div>
             ];
         });
-    }
+    };
 
     render() {
-        const renderProjects = this.renderProjects();
-
         return (
             <div>
-                {renderProjects}
+                {this.renderProjects()}
             </div>
         );
     };
