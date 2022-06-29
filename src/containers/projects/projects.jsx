@@ -39,8 +39,8 @@ class Projects extends Component {
                 DATE_EDITED: date_edited } = project;
 
             return [
-                <div key={id}>
-                    <p>Title: {title}</p>
+                <div key={id} className={'project__container-content'}>
+                    <h1>Title: {title}</h1>
                     <p>Description: {description}</p>
                     <p>Content: {content}</p>
                     <p>Date Created: {date_created}</p>
@@ -53,7 +53,13 @@ class Projects extends Component {
 
     render() {
         return (
-            <div>
+            <div className={'project__container'}>
+                <div className={'project__container-sidebar'}>
+                    <p>Section 1</p>
+                    <p>Section 2</p>
+                    <p>Section 3</p>
+                </div>
+
                 {this.renderProjects()}
             </div>
         );
