@@ -1,0 +1,13 @@
+* {
+    font-family: var(--font-family);
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 1090px;
+
+    margin: 0 auto;
+    padding: 1rem 2rem;
+}
