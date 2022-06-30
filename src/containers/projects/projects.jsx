@@ -9,20 +9,62 @@ class Projects extends Component {
             editorActive: true,
             index: 0,
             data: [{
-                ID: null,
-                TITLE: null,
-                DESCRIPTION: null,
-                CONTENT: null,
-                DATE_CREATED: null,
-                DATE_EDITED: null
-            }]
+                ID: '',
+                TITLE: '',
+                DESCRIPTION: '',
+                CONTENT: '',
+                DATE_CREATED: '',
+                DATE_EDITED: ''
+            }],
+            title: '',
+            content: '',
+            description: ''
         };
+
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+    };
+
+    async handleSubmit(event) {
+        const title = this.state.title;
+        const description = this.state.description;
+        const content = this.state.content;
+
+        await fetch('/api', {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                table: 'projects',
+                id: 0,
+                values: [title, description, content],
+                cols: ['TITLE', 'DESCRIPTION', 'CONTENT']
+            })
+        });
+
+        event.preventDefault();
+    };
+
+    handleChange(event) {
+        const state = event.target.id;
+        const value = event.target.value;
+
+        if (state === 'projectTitle') this.setState({title: value});
+        if (state === 'projectDescription') this.setState({description: value});
+        if (state === 'projectContent') this.setState({content: value});
+
+        console.log(state);
+        console.log(value);
     };
 
     componentDidMount() {
         this.callBackendApi()
             .then(res => {
                 this.setState({data: res.message});
+
+                const project = res.message.at(this.state.index);
+                this.setState({title: project['TITLE']});
+                this.setState({description: project['DESCRIPTION']});
+                this.setState({content: project['CONTENT']});
             })
             .catch(err => console.log(err));
     };
@@ -53,27 +95,30 @@ class Projects extends Component {
         if (this.state.editorActive) {
             return (
                 <div key={id} className={'project__container-content'}>
-                    <form>
+                    <form onSubmit={this.handleSubmit}>
                         {/* Project Title */}
                         <div className={'mb-3'}>
                             <label form={'projectTitle'} className={'form-label'}>Project Title</label>
-                            <input type={'text'} className={'form-control'} id={'projectTitle'} />
+                            <input type={'text'} className={'form-control'} id={'projectTitle'} defaultValue={title} onChange={this.handleChange}/>
                             <div id={'titleHelpBlock'} className={'form-text'}>150 characters remaining</div>
                         </div>
 
                         {/* Description */}
                         <div className={'mb-3'}>
                             <label form={'projectDescription'} className={'form-label'}>Description</label>
-                            <textarea className={'form-control'} rows={3}></textarea>
+                            <textarea className={'form-control'} id={'projectDescription'} defaultValue={description} rows={6} onChange={this.handleChange}></textarea>
                             <div id={'descriptionHelpBlock'} className={'form-text'}>150 characters remaining</div>
                         </div>
 
                         {/* Content */}
                         <div className={'mb-3'}>
                             <label form={'projectContent'} className={'form-label'}>Content</label>
-                            <textarea className={'form-control'} rows={6}></textarea>
+                            <textarea className={'form-control'} id={'projectContent'} defaultValue={content} rows={12} onChange={this.handleChange}></textarea>
                             <div id={'contentHelpBlock'} className={'form-text'}>250 characters remaining</div>
                         </div>
+
+                        {/* Submit Content to SQL Database */}
+                        <button type={'submit'} className={'btn btn-primary'}>Submit</button>
                     </form>
                 </div>
             );

@@ -38,6 +38,8 @@ exports.patchById = async (req, res) => {
     const values = req.body.values;
     const id = req.body.id;
 
+    console.log(req.body);
+
     await ContentModel.patchById(table_name, cols, values, id)
         .then((results) => {
             res.status(200).send({message: results});
