@@ -10,10 +10,10 @@ exports.insert = async (req, res) => {
     const values = req.body.values;
 
     await ContentModel.newEntry(table_name, [values])
-        .then((results) => {
+        .then(results => {
             res.status(201).send({message: results});
         })
-        .catch((err) => {
+        .catch(err => {
             res.status(400).send({errorMessage: err});
         });
 };
@@ -23,10 +23,23 @@ exports.list = async (req, res) => {
     const table_name = req.query.table;
 
     await ContentModel.getByTable(table_name)
-        .then((results) => {
+        .then(results => {
             res.status(200).send({message: results});
         })
-        .catch((err) => {
+        .catch(err => {
+            res.status(400).send({errorMessage: err});
+        });
+};
+
+exports.getById = async (req, res) => {
+    const table_name = req.query.table;
+    const id = req.query.id;
+
+    await ContentModel.getById(table_name, id)
+        .then(results => {
+            res.status(200).send({message: results});
+        })
+        .catch(err => {
             res.status(400).send({errorMessage: err});
         });
 };
@@ -41,10 +54,10 @@ exports.patchById = async (req, res) => {
     console.log(req.body);
 
     await ContentModel.patchById(table_name, cols, values, id)
-        .then((results) => {
+        .then(results => {
             res.status(200).send({message: results});
         })
-        .catch((err) => {
+        .catch(err => {
             res.status(400).send({errorMessage: err});
         });
 };
@@ -55,10 +68,10 @@ exports.removeById = async (req, res) => {
     const id = req.body.id;
 
     await ContentModel.removeById(table_name, id)
-        .then((results) => {
+        .then(results => {
             res.status(200).send({message: results});
         })
-        .catch((err) => {
+        .catch(err => {
             res.status(400).send({errorMessage: err});
         });
 };
