@@ -3,7 +3,7 @@ const ContentController = require('./controllers/content.controller');
 
 exports.routes_config = (app) => {
     app.get('/api', [
-        ContentController.list
+        ContentController.getById
     ]);
 
     app.post('/api', [
