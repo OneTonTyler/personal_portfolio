@@ -63,6 +63,21 @@ exports.getByTable = (table) => {
     });
 };
 
+// Read a single entry
+exports.getById = (table, id) => {
+    const sql = `SELECT * FROM ${table} WHERE ID = ${id}`;
+
+    return new Promise((resolve, reject) => {
+        database.query(sql, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+
+            resolve(results[0]);
+        });
+    });
+};
+
 // Update database
 exports.patchById = (table, cols, values, id) => {
     const idx = cols.length;
