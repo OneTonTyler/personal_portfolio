@@ -1,0 +1,29 @@
+.home__container-content {
+    display: grid;
+    grid-template-rows: repeat(2, auto);
+
+    padding: 2rem 4rem;
+    row-gap: 2rem;
+}
+
+/* Content Editor */
+
+/* Guest View */
+.home__render-view {
+    display: grid;
+    grid-template-rows: repeat(3, auto);
+
+    row-gap: 2rem;
+}
+
+.home__render-view__content {
+    display: flex;
+    justify-content: center;
+}
+
+.home__render-view__content img {
+    object-fit: cover;
+    border-radius: 50%;
+    height: 250px;
+    width: 250px
+}
