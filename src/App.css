@@ -2,11 +2,11 @@
     font-family: var(--font-family);
 }
 
+a {
+    text-decoration: none;
+}
+
 body {
     justify-content: flex-start;
     align-items: flex-start;
-    max-width: 1090px;
-
-    margin: 0 auto;
-    padding: 1rem 2rem;
 }
