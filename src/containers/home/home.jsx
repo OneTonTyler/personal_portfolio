@@ -65,12 +65,11 @@ const EditorView = props => {
                 </div>
 
                 {/* Upload content to sql database */}
-                <div className='btn-group' role='group'>
-                    <button type='submit' className='btn btn-primary'>Submit</button>
+                <div className='button-group'>
+                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
                     <button type='submit' className='btn btn-outline-primary' onClick={props.render}>Render</button>
                     <button type='submit' className='btn btn-outline-primary' onClick={props.cancel}>Cancel</button>
                 </div>
-
             </form>
             {/* Guest View */}
             <RenderView data={props.data} />
