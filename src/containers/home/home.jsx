@@ -22,6 +22,7 @@ const RenderView = props => {
 
             <div className='home__render-view__content'>
                 <p>{content}</p>
+                <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
             </div>
         </div>
     )
@@ -61,6 +62,7 @@ const EditorView = props => {
                     <button type='submit' className='btn btn-outline-primary active'>Submit</button>
                     <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
                     <button type='reset' className='btn btn-outline-primary'>Cancel</button>
+                    <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
                 </div>
             </form>
             {/* Guest View */}
@@ -82,6 +84,7 @@ class HomePage extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleRender = this.handleRender.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
+        this.toggleEditor = this.toggleEditor.bind(this);
     }
 
     componentDidMount() {
@@ -171,6 +174,9 @@ class HomePage extends Component {
         this.setState({data: this.state.original});
     }
 
+    toggleEditor() {
+        this.setState({editorActive: !this.state.editorActive})
+    };
 
     render() {
         let { CONTENT: content } = this.state.data;
@@ -183,14 +189,16 @@ class HomePage extends Component {
                     submit = {this.handleSubmit}
                     render = {this.handleRender}
                     cancel = {this.handleCancel}
+                    editor = {this.toggleEditor}
                 />
             )
         }
 
         return (
-            <div>
-                <p>{content}</p>
-            </div>
+            <RenderView
+                data = {this.state.data}
+                editor = {this.toggleEditor}
+            />
         );
     }
 }
