@@ -48,27 +48,27 @@ const EditorView = props => {
 
                 {/* Profile image path */}
                 <div className='mb-3'>
-                    <label form='home_img' className='form-label'>Profile Image</label>
-                    <input type='text' id='home_img' className='form-control' defaultValue={profile_img}/>
+                    <label form='profile_img' className='form-label'>Profile Image</label>
+                    <input type='text' id='profile_img' className='form-control' defaultValue={profile_img}/>
                 </div>
 
                 {/* Title */}
                 <div className='mb-3'>
-                    <label form='home_title' className='form-label'>Title</label>
-                    <input type='text' id='home_title' className='form-control' defaultValue={title}/>
+                    <label form='title' className='form-label'>Title</label>
+                    <input type='text' id='title' className='form-control' defaultValue={title}/>
                 </div>
 
                 {/* About Me */}
                 <div className='mb-3'>
-                    <label form='home_content' className='form-label'>Content</label>
-                    <textarea className='form-control' id='home_content' defaultValue={content} />
+                    <label form='content' className='form-label'>Content</label>
+                    <textarea className='form-control' id='content' defaultValue={content} />
                 </div>
 
                 {/* Upload content to sql database */}
                 <div className='btn-group' role='group'>
                     <button type='submit' className='btn btn-primary'>Submit</button>
-                    <button type='submit' className='btn btn-outline-primary'>Render</button>
-                    <button type='submit' className='btn btn-outline-primary'>Cancel</button>
+                    <button type='submit' className='btn btn-outline-primary' onClick={props.render}>Render</button>
+                    <button type='submit' className='btn btn-outline-primary' onClick={props.cancel}>Cancel</button>
                 </div>
 
             </form>
@@ -82,12 +82,15 @@ class HomePage extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            render: false,
             hasError: false,
             editorActive: true,
             data: {}
         }
 
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleRender = this.handleRender.bind(this);
+        this.handleCancel = this.handleCancel.bind(this);
     }
 
     componentDidMount() {
@@ -95,8 +98,7 @@ class HomePage extends Component {
             .then(res => {
                 if (!res.message) {
                     this.setState({hasError: true});  // Basic error handling
-                }
-                else {
+                } else {
                     this.setState({data: res.message});
                 }
             })
@@ -116,15 +118,53 @@ class HomePage extends Component {
     }
 
     async handleSubmit(event) {
-        console.log('Test');
+        if (this.state.render) return;
+
+        const values = [];
+        const cols = [];
+
+        // Get new values
+        ['title', 'content', 'profile_img'].forEach(element => {
+            let newValue = event.target.querySelector(`#${element}`).value;
+            let currentValue = this.state.data[element.toUpperCase()];
+
+            if (currentValue !== newValue) {
+                values.push(newValue);
+                cols.push(element.toUpperCase());
+            }
+        });
+
+        // Only submit request if values change
+        if (values[0]) {
+            await fetch('/api', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    table: 'homepage',
+                    id: 0,
+                    values: values,
+                    cols: cols
+                })
+            });
+        } else return;
+
+        event.preventDefault();
     }
 
-    async handleRender(event) {
+    handleRender(event) {
+        this.setState({render: true});
+        const render = {};
 
+        ['TITLE', 'CONTENT', 'PROFILE_IMG'].forEach(element => {
+            render[`${element}`] = document.body.querySelector(`#${element.toLowerCase()}`).value;
+        });
+
+        this.setState({data: render});
+        event.preventDefault();
     }
 
-    async handleCancel(event) {
-
+    handleCancel(event) {
+        return;
     }
 
 
@@ -134,7 +174,11 @@ class HomePage extends Component {
         if (this.state.editorActive) {
             return (
                 <EditorView
-                    data={this.state.data} submit={this.handleSubmit}/>
+                    data={this.state.data}
+                    submit={this.handleSubmit}
+                    render={this.handleRender}
+                    cancel={this.handleCancel}
+                />
             )
         }
 
