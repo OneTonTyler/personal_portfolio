@@ -8,10 +8,6 @@ const RenderView = props => {
         TITLE: title,
         CONTENT: content } = props.data;
 
-    if (!profile_img) {
-        profile_img = 'portfolio.jpg'
-    }
-
     return (
         <div className='home__render-view'>
             <h1>Guest View</h1>
@@ -37,13 +33,9 @@ const EditorView = props => {
         TITLE: title,
         CONTENT: content } = props.data;
 
-    if (!profile_img) {
-        profile_img = 'portfolio.jpg'
-    }
-
     return (
         <div className='home__container-content'>
-            <form onSubmit={props.submit}>
+            <form onSubmit={props.submit} onReset={props.cancel}>
                 <h1>Content Editor</h1>
 
                 {/* Profile image path */}
@@ -67,8 +59,8 @@ const EditorView = props => {
                 {/* Upload content to sql database */}
                 <div className='button-group'>
                     <button type='submit' className='btn btn-outline-primary active'>Submit</button>
-                    <button type='submit' className='btn btn-outline-primary' onClick={props.render}>Render</button>
-                    <button type='submit' className='btn btn-outline-primary' onClick={props.cancel}>Cancel</button>
+                    <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
+                    <button type='reset' className='btn btn-outline-primary'>Cancel</button>
                 </div>
             </form>
             {/* Guest View */}
@@ -81,10 +73,10 @@ class HomePage extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            render: false,
             hasError: false,
             editorActive: true,
-            data: {}
+            data: {PROFILE_IMG: 'portfolio.jpg'},  // Default image
+            original: {}
         }
 
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -98,7 +90,10 @@ class HomePage extends Component {
                 if (!res.message) {
                     this.setState({hasError: true});  // Basic error handling
                 } else {
-                    this.setState({data: res.message});
+                    this.setState({
+                        data: res.message,
+                        original: res.message
+                    });
                 }
             })
             .catch(err => console.log(err));
@@ -116,17 +111,29 @@ class HomePage extends Component {
         return body;
     }
 
-    async handleSubmit(event) {
-        if (this.state.render) return;
+    // Set profile image to default img
+    componentDidCatch(error, errorInfo) {
+        if (error.code === 'MODULE_NOT_FOUND') {
+            this.setState({data: {PROFILE_IMG: 'portfolio.jpg'}})
+        }
+    }
 
+    static getDerivedStateFromError(error) {
+        // Update state so the next render will show the fallback UI.
+        return { hasError: true };
+    }
+
+    // Form submission
+    async handleSubmit(event) {
         const values = [];
         const cols = [];
 
-        // Get new values
+        // Get values
         ['title', 'content', 'profile_img'].forEach(element => {
             let newValue = event.target.querySelector(`#${element}`).value;
             let currentValue = this.state.data[element.toUpperCase()];
 
+            // Only push values that changed
             if (currentValue !== newValue) {
                 values.push(newValue);
                 cols.push(element.toUpperCase());
@@ -151,9 +158,7 @@ class HomePage extends Component {
     }
 
     handleRender(event) {
-        this.setState({render: true});
         const render = {};
-
         ['TITLE', 'CONTENT', 'PROFILE_IMG'].forEach(element => {
             render[`${element}`] = document.body.querySelector(`#${element.toLowerCase()}`).value;
         });
@@ -162,8 +167,8 @@ class HomePage extends Component {
         event.preventDefault();
     }
 
-    handleCancel(event) {
-        return;
+    handleCancel() {
+        this.setState({data: this.state.original});
     }
 
 
@@ -173,10 +178,11 @@ class HomePage extends Component {
         if (this.state.editorActive) {
             return (
                 <EditorView
-                    data={this.state.data}
-                    submit={this.handleSubmit}
-                    render={this.handleRender}
-                    cancel={this.handleCancel}
+                    hasError = {this.state.hasError}
+                    data = {this.state.data}
+                    submit = {this.handleSubmit}
+                    render = {this.handleRender}
+                    cancel = {this.handleCancel}
                 />
             )
         }
