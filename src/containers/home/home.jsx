@@ -8,12 +8,18 @@ const RenderView = props => {
         TITLE: title,
         CONTENT: content } = props.data;
 
+    const img = (path) => {
+        try {
+            return require(`../../assests/profile/${path}`);
+        } catch (err) {
+            return require('../../assests/profile/default_thumbnail.jpg')
+        }
+    }
+
     return (
         <div className='home__render-view'>
-            <h1>Guest View</h1>
-
             <div className='home__render-view__content'>
-                <img src={require(`../../assests/profile/${profile_img}`)} alt='profile'/>
+                <img src={img(profile_img)} alt='profile'/>
             </div>
 
             <div className='home__render-view__content'>
@@ -22,17 +28,23 @@ const RenderView = props => {
 
             <div className='home__render-view__content'>
                 <p>{content}</p>
-                <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
             </div>
         </div>
     )
 }
 
 const EditorView = props => {
+    let hasBrokenImgLink = false;
     let {
         PROFILE_IMG: profile_img,
         TITLE: title,
         CONTENT: content } = props.data;
+
+    try {
+        require(`../../assests/profile/${profile_img}`);
+    } catch (err) {
+        hasBrokenImgLink = true;
+    }
 
     return (
         <div className='home__container-content'>
@@ -43,6 +55,9 @@ const EditorView = props => {
                 <div className='mb-3'>
                     <label form='profile_img' className='form-label'>Profile Image</label>
                     <input type='text' id='profile_img' className='form-control' defaultValue={profile_img}/>
+                    {hasBrokenImgLink &&
+                        <div className='form-text' id='imgHelperText'>Warning: path to image does not exist.</div>
+                    }
                 </div>
 
                 {/* Title */}
@@ -65,7 +80,9 @@ const EditorView = props => {
                     <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
                 </div>
             </form>
+
             {/* Guest View */}
+            <h1>Guest View</h1>
             <RenderView data={props.data} />
         </div>
     )
@@ -75,9 +92,10 @@ class HomePage extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            usePrevState: false,
             hasError: false,
             editorActive: true,
-            data: {PROFILE_IMG: 'portfolio.jpg'},  // Default image
+            data: {PROFILE_IMG: 'default_thumbnail.jpg'},  // Default image
             original: {}
         }
 
@@ -112,13 +130,6 @@ class HomePage extends Component {
             throw Error(body.errorMessage);
         }
         return body;
-    }
-
-    // Set profile image to default img
-    componentDidCatch(error, errorInfo) {
-        if (error.code === 'MODULE_NOT_FOUND') {
-            this.setState({data: {PROFILE_IMG: 'portfolio.jpg'}})
-        }
     }
 
     static getDerivedStateFromError(error) {
@@ -179,7 +190,13 @@ class HomePage extends Component {
     };
 
     render() {
-        let { CONTENT: content } = this.state.data;
+        if (this.state.hasError) {
+            return (
+                <div>
+                    <p>Something went wrong</p>
+                </div>
+            )
+        }
 
         if (this.state.editorActive) {
             return (
@@ -195,10 +212,10 @@ class HomePage extends Component {
         }
 
         return (
-            <RenderView
-                data = {this.state.data}
-                editor = {this.toggleEditor}
-            />
+            <div className='home__container-content'>
+                <RenderView data = {this.state.data}/>
+                <button type='button' className='btn btn-outline-primary' onClick={this.toggleEditor}>Editor</button>
+            </div>
         );
     }
 }
