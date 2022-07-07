@@ -6,6 +6,10 @@ exports.routes_config = (app) => {
         ContentController.getById
     ]);
 
+    app.get('/api/list_all', [
+        ContentController.list
+    ]);
+
     app.post('/api', [
         ContentController.insert
     ]);

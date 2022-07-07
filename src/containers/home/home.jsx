@@ -108,14 +108,10 @@ class HomePage extends Component {
     componentDidMount() {
         this.callBackendApi()
             .then(res => {
-                if (!res.message) {
-                    this.setState({hasError: true});  // Basic error handling
-                } else {
-                    this.setState({
-                        data: res.message,
-                        original: res.message
-                    });
-                }
+                this.setState({
+                    data: res.message,
+                    original: res.message
+                });
             })
             .catch(err => console.log(err));
     }
