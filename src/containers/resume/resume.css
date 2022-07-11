@@ -1,7 +1,67 @@
+/* Body */
+h1 {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 24px;
+}
+
+h4 {
+    font-size: 18px;
+    color: steelblue;
+    font-weight: bold;
+}
+
 .resume__container {
     padding: 2rem;
 }
 
+/* Header */
+.resume__header {
+    display: flex;
+    flex-direction: column;
+}
+
+.resume__header > p {
+    font-size: 24px;
+}
+
+.resume__header-contact {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 2rem;
+}
+
+.resume__header-contact p {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 0.5rem;
+}
+
+/* Skills and Qualifications */
+.resume__skills {
+    display: flex;
+    flex-direction: column;
+}
+
+.resume__skills div {
+    display: grid;
+    grid-template-columns: 250px auto;
+}
+
+.resume__skills div p:first-child {
+    color: steelblue;
+    font-weight: bold;
+}
+
+/* Work Experience */
 .resume__experience {
     display: grid;
     grid-template-rows: repeat(3, auto);
@@ -9,14 +69,63 @@
 
 .resume__experience-header {
     display: flex;
-    justify-content: space-between;
+    gap: 2rem;
 }
 
-.resume__experience-title {
+.resume__experience-description {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Education */
+.resume__education-degree {
+    display: flex;
+    flex-direction: column;
+}
+
+.resume__education-degree > p:first-child {
+    margin-bottom: 0;
+    color: steelblue;
+    font-weight: bold;
+}
+
+.resume__education-degree__cluster {
     display: flex;
     justify-content: space-between;
 }
 
-.resume__experience-duties {
+/* Sections */
+section h2:after {
+    border-top: 3px solid black;
+    content: "";
+    display: block;
+    width: 100%;
+}
 
+
+/*section:not(:first-child) h1:after {*/
+/*    border-top: 2px solid #000;*/
+/*    content: "";*/
+/*    display: block;*/
+/*    width: 100%;*/
+/*}*/
+
+/*section:not(:first-child) h1 {*/
+/*    font-size: x-large;*/
+/*}*/
+
+/*section:not(:first-child) h3 {*/
+/*    font-style: italic;*/
+/*}*/
+
+/*h2, h3 {*/
+/*    font-size: large;*/
+/*}*/
+
+/*h2 {*/
+/*    font-weight: bold;*/
+/*}*/
+
+ul {
+    padding-left: 1rem;
 }
