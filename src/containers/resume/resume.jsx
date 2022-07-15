@@ -399,15 +399,7 @@ class Resume extends Component {
 
                 // Load column values into columns
                 for (let column = 0; column < sections.length; column++) {
-
-                    console.log(cols[column])
-                    // Ensure Duties column is a json object
-                    if (cols[column] === 'DUTIES') {
-                        console.log(JSON.parse(sections[column][id].value))
-                        values.push(JSON.stringify(sections[column][id].value))
-                    } else {
-                        values.push(sections[column][id].value);
-                    }
+                    values.push(sections[column][id].value);
                 }
 
                 // Submit request to SQL server
