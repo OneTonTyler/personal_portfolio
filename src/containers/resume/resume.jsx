@@ -6,8 +6,29 @@ const HeaderView = props => {
     const {
         TITLE: title,
         SUBTITLE: subtitle,
-        OBJECTIVE: objective
     } = props.header[0];
+
+    if (props.editor) {
+        return (
+            <section className='resume__header'>
+                <div>
+                    <h2>Header</h2>
+
+                    {/* Title */}
+                    <div className='mb-3'>
+                        <label form='resume_header__title' className='form-label'>Resume Title</label>
+                        <input type='text' id='resume_header__title' className='form-control' defaultValue={title}/>
+                    </div>
+
+                    {/* Subtitle */}
+                    <div className='mb-3'>
+                        <label form='resume_header__subtitle' className='form-label'>Subtitle</label>
+                        <input type='text' id='resume_header__subtitle' className='form-control' defaultValue={subtitle}/>
+                    </div>
+                </div>
+            </section>
+        )
+    }
 
     return (
         <section className='resume__header'>
@@ -25,10 +46,37 @@ const HeaderView = props => {
 
 const SkillsView = props => {
     const {
-        LANGUAGES: language,
+        LANGUAGES: languages,
         STUDIES: studies,
         ATTRIBUTES: attributes
     } = props.skills[0];
+
+    if (props.editor) {
+        return (
+            <section>
+                <h2>Skills and Qualifications</h2>
+                <div>
+                    {/* Tools and Languages */}
+                    <div className='mb-3'>
+                        <label form='resume_skills__languages' className='form-label'>Languages</label>
+                        <input type='text' id='resume_skills__languages' className='form-control' defaultValue={languages}/>
+                    </div>
+
+                    {/* Studies of Interest */}
+                    <div className='mb-3'>
+                        <label form='resume_skills__studies' className='form-label'>Studies of Interest</label>
+                        <input type='text' id='resume_skills__studies' className='form-control' defaultValue={studies}/>
+                    </div>
+
+                    {/* Attributes */}
+                    <div className='mb-3'>
+                        <label form='resume_skills__attributes' className='form-label'>Attributes</label>
+                        <input type='text' id='resume_skills__attributes' className='form-control' defaultValue={attributes}/>
+                    </div>
+                </div>
+            </section>
+        )
+    }
 
     return (
         <section>
@@ -36,7 +84,7 @@ const SkillsView = props => {
             <div className='resume__skills'>
                 <div>
                     <p>Tools and Languages</p>
-                    <p>{language}</p>
+                    <p>{languages}</p>
                 </div>
 
                 <div>
@@ -68,18 +116,67 @@ const JobView = props => {
             DATE_ENDED: date_ended
         } = job;
 
+        // Normalize dates
+        date_started = date_ended.slice(0, 10);
+        date_ended = date_ended.slice(0, 10);
+
         // Get all duties
-        duties = JSON.parse(duties)['roles'].map((role, idx) => {
-            return <li key={idx}>{role}</li>;
+        let duties_list = JSON.parse(duties)['roles'].map((role, idx) => {
+            return <li key={`${role}_${idx}`}>{role}</li>;
         });
 
-        // Normalize dates
-        const options = { year: 'numeric', month: 'short' }
-        date_started = new Date(date_started).toLocaleString('en-US', options);
-        date_ended = new Date(date_ended).toLocaleString('en-US', options);
+        if (props.editor) {
+            return (
+                <div key={id}>
+                    <h4>{`Job number ${id}`}</h4>
+
+                    {/* Job Title */}
+                    <div className='mb-3'>
+                        <label form={`resume_experience__job_title_${id}`} className='form-label'>Job Title</label>
+                        <input type='text' id={`resume_experience__job_title_${id}`} className='form-control' defaultValue={job_title}/>
+                    </div>
+
+                    {/* Employer */}
+                    <div className='mb-3'>
+                        <label form={`resume_experience__job_employer_${id}`} className='form-label'>Employer</label>
+                        <input type='text' id={`resume_experience__job_employer_${id}`} className='form-control' defaultValue={job_employer}/>
+                    </div>
+
+                    {/* Job Location */}
+                    <div className='mb-3'>
+                        <label form={`resume_experience__job_location_${id}`} className='form-label'>Location</label>
+                        <input type='text' id={`resume_experience__job_location_${id}`} className='form-control' defaultValue={job_location}/>
+                    </div>
+
+                    {/* Job Description */}
+                    <div className='mb-3'>
+                        <label form={`resume_experience__job_description_${id}`} className='form-label'>Description</label>
+                        <textarea id={`resume_experience__job_description_${id}`} className='form-control' rows='6' defaultValue={job_description}/>
+                    </div>
+
+                    {/* Duties */}
+                    <div className='mb-3'>
+                        <label form={`resume_experience__duties_${id}`} className='form-label'>Duties</label>
+                        <textarea id={`resume_experience__duties_${id}`} className='form-control' rows='6' defaultValue={duties}/>
+                    </div>
+
+                    {/* Date Started */}
+                    <div className='mb-3'>
+                        <label form={`resume_experience__date_started_${id}`} className='form-label'>Date Started</label>
+                        <input type='text' id={`resume_experience__date_started_${id}`} className='form-control' defaultValue={date_started}/>
+                    </div>
+
+                    {/* Date Ended */}
+                    <div className='mb-3'>
+                        <label form={`resume_experience__date_ended_${id}`} className='form-label'>Dated Ended</label>
+                        <input type='text' id={`resume_experience__date_ended_${id}`} className='form-control' defaultValue={date_ended}/>
+                    </div>
+                </div>
+            )
+        }
 
         return (
-            <div key={id} className='resume__experience'>
+            <div className='resume__experience'>
                 <h3>{job_title}</h3>
                 <h4>{job_employer}</h4>
                 <div className='resume__experience-header'>
@@ -89,7 +186,7 @@ const JobView = props => {
 
                 <div className='resume__experience-description'>
                     <p>{job_description}</p>
-                    <ul>{duties}</ul>
+                    <ul>{duties_list}</ul>
                 </div>
             </div>
         );
@@ -110,14 +207,36 @@ const EducationView = props => {
             ID: id,
             SCHOOL: school,
             DEGREE: degree,
-            DATE_STARTED: date_started,
             DATE_ENDED: date_ended
         } = element;
 
-        // Normalize dates
-        const options = { year: 'numeric', month: 'short' }
-        date_started = new Date(date_started).toLocaleString('en-US', options);
-        date_ended = new Date(date_ended).toLocaleString('en-US', options);
+        // Normalize date
+        date_ended = date_ended.slice(0, 10);
+
+        if (props.editor) {
+            return(
+                <div key={id}>
+                    <h4>{`Certification ${id}`}</h4>
+                    {/* School */}
+                    <div className='mb-3'>
+                        <label form={`resume_education__school_${id}`} className='form-label'>School Name</label>
+                        <input type='text' id={`resume_education__school_${id}`} className='form-control' defaultValue={school}/>
+                    </div>
+
+                    {/* Degree */}
+                    <div className='mb-3'>
+                        <label form={`resume_education__degree_${id}`} className='form-label'>Degree</label>
+                        <input type='text' id={`resume_education__degree_${id}`} className='form-control' defaultValue={degree}/>
+                    </div>
+
+                    {/* Date Ended */}
+                    <div className='mb-3'>
+                        <label form={`resume_education__date_ended_${id}`} className='form-label'>Date Received</label>
+                        <input type='text' id={`resume_education__date_ended_${id}`} className='form-control' defaultValue={date_ended}/>
+                    </div>
+                </div>
+            )
+        }
 
         return (
             <div className='resume__education-degree' key={id}>
@@ -139,13 +258,30 @@ const EducationView = props => {
 }
 
 const RenderView = props => {
-    // Initialize variables
+    if (props.editorActive) {
+        return (
+            <form className='resume__container' onSubmit={props.submit}>
+                <HeaderView header={props.header} editor={props.editorActive}/>
+                <SkillsView skills={props.skills} editor={props.editorActive}/>
+                <JobView experience={props.experience} editor={props.editorActive}/>
+                <EducationView education={props.education} editor={props.editorActive}/>
+
+                <div className='button-group'>
+                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
+                    <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
+                    <button type='reset' className='btn btn-outline-primary'>Cancel</button>
+                    <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
+                </div>
+            </form>
+        )
+    }
+
     return (
         <div className='resume__container'>
-            <HeaderView header={props.header} />
-            <SkillsView skills={props.skills} />
-            <JobView experience={props.experience}/>
-            <EducationView education={props.education}/>
+            <HeaderView header={props.header} editor={props.editorActive}/>
+            <SkillsView skills={props.skills} editor={props.editorActive}/>
+            <JobView experience={props.experience} editor={props.editorActive}/>
+            <EducationView education={props.education} editor={props.editorActive}/>
         </div>
     )
 }
@@ -158,8 +294,11 @@ class Resume extends Component {
             editorActive: true,
             header: {},
             skills: {},
-            workExperience: {}
+            workExperience: {},
+            education: {},
         }
+
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     async componentDidMount() {
@@ -198,24 +337,85 @@ class Resume extends Component {
         return body;
     }
 
+    async handleSubmit(event) {
+        const education_cols = ['SCHOOL', 'DEGREE', 'DATE_ENDED'];
+        const experience_cols = ['JOB_TITLE', 'JOB_LOCATION', 'JOB_EMPLOYER', 'JOB_DESCRIPTION', 'DUTIES', 'DATE_STARTED', 'DATE_ENDED'];
+        const header_cols = ['TITLE', 'SUBTITLE'];
+        const skills_cols = ['LANGUAGES', 'STUDIES', 'ATTRIBUTES'];
+
+        const tables = {
+            resume_education: education_cols,
+            resume_experience: experience_cols,
+            resume_header: header_cols,
+            resume_skills: skills_cols
+        };
+
+        Object.keys(tables).forEach(table_name => {
+            let cols = [];
+            let sections = [];
+
+            // Get a list of all sections
+            tables[table_name].forEach(col => {
+                let id = `${table_name}__${col.toLowerCase()}`;
+                let value = event.target.querySelectorAll(`[id^=${id}]`);
+
+                // Push to columns and sections
+                cols.push(col);
+                sections.push(value);
+            });
+
+            // Send a PATCH request for each section
+            for (let id  = 0; id < sections[0].length; id++) {
+                let values = [];
+
+                // Load column values into columns
+                for (let column = 0; column < sections.length; column++) {
+
+                    // Ensure Duties column is a json object
+                    if (cols[column] === 'DUTIES') {
+                        values.push(JSON.stringify(sections[column][id].value))
+                        return;
+                    }
+                    values.push(sections[column][id].value);
+                }
+
+                // Submit request to SQL server
+                FetchRequest(id, values, cols, table_name)
+            }
+        })
+
+        // Patch request
+        async function FetchRequest(id, values, cols, table_name) {
+            await fetch('/api', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    table: table_name,
+                    id: id,
+                    values: values,
+                    cols: cols
+                })
+            })
+        }
+
+        event.preventDefault();
+    }
+
     render() {
         if (!this.state.header[0]) {
-            return (
-                <div>
-                    <p>Hello World</p>
-                </div>
-            )
+            return
         }
-        else {
-            return (
-                <RenderView
-                    header={this.state.header}
-                    skills={this.state.skills}
-                    experience={this.state.workExperience}
-                    education={this.state.education}
-                />
-            )
-        }
+
+        return (
+            <RenderView
+                editorActive={this.state.editorActive}
+                header={this.state.header}
+                skills={this.state.skills}
+                experience={this.state.workExperience}
+                education={this.state.education}
+                submit={this.handleSubmit}
+            />
+        )
     }
 
 }
