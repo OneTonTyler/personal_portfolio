@@ -102,100 +102,129 @@ const SkillsView = props => {
 }
 
 const JobView = props => {
-    const experience = props.experience;
-    const view = experience.map(job => {
+    function View(experience) {
+        return experience.map(job => {
 
-        let {
-            ID: id,
-            JOB_TITLE: job_title,
-            JOB_DESCRIPTION: job_description,
-            JOB_LOCATION: job_location,
-            JOB_EMPLOYER: job_employer,
-            DUTIES: duties,
-            DATE_STARTED: date_started,
-            DATE_ENDED: date_ended
-        } = job;
+            let {
+                ID: id,
+                JOB_TITLE: job_title,
+                JOB_DESCRIPTION: job_description,
+                JOB_LOCATION: job_location,
+                JOB_EMPLOYER: job_employer,
+                DUTIES: duties,
+                DATE_STARTED: date_started,
+                DATE_ENDED: date_ended
+            } = job;
 
-        // Normalize dates
-        date_started = date_ended.slice(0, 10);
-        date_ended = date_ended.slice(0, 10);
+            // Normalize dates
+            date_started = date_started.slice(0, 10);
+            date_ended = date_ended.slice(0, 10);
 
-        // Get all duties
-        let duties_list = JSON.parse(duties)['roles'].map((role, idx) => {
-            return <li key={`${role}_${idx}`}>{role}</li>;
-        });
+            // Get all duties
+            let duties_list = JSON.parse(duties)['roles'].map((role, idx) => {
+                return <li key={`${role}_${idx}`}>{role}</li>;
+            });
 
-        if (props.editor) {
+            if (props.editor) {
+                return (
+                    <div key={id}>
+                        <h4>{`Job number ${id}`}</h4>
+
+                        {/* Job Title */}
+                        <div className='mb-3'>
+                            <label form={`resume_experience__job_title_${id}`} className='form-label'>Job Title</label>
+                            <input type='text' id={`resume_experience__job_title_${id}`} className='form-control'
+                                   defaultValue={job_title}/>
+                        </div>
+
+                        {/* Employer */}
+                        <div className='mb-3'>
+                            <label form={`resume_experience__job_employer_${id}`}
+                                   className='form-label'>Employer</label>
+                            <input type='text' id={`resume_experience__job_employer_${id}`} className='form-control'
+                                   defaultValue={job_employer}/>
+                        </div>
+
+                        {/* Job Location */}
+                        <div className='mb-3'>
+                            <label form={`resume_experience__job_location_${id}`}
+                                   className='form-label'>Location</label>
+                            <input type='text' id={`resume_experience__job_location_${id}`} className='form-control'
+                                   defaultValue={job_location}/>
+                        </div>
+
+                        {/* Job Description */}
+                        <div className='mb-3'>
+                            <label form={`resume_experience__job_description_${id}`}
+                                   className='form-label'>Description</label>
+                            <textarea id={`resume_experience__job_description_${id}`} className='form-control' rows='6'
+                                      defaultValue={job_description}/>
+                        </div>
+
+                        {/* Duties */}
+                        <div className='mb-3'>
+                            <label form={`resume_experience__duties_${id}`} className='form-label'>Duties</label>
+                            <textarea id={`resume_experience__duties_${id}`} className='form-control' rows='6'
+                                      defaultValue={duties}/>
+                        </div>
+
+                        {/* Date Started */}
+                        <div className='mb-3'>
+                            <label form={`resume_experience__date_started_${id}`} className='form-label'>Date
+                                Started</label>
+                            <input type='text' id={`resume_experience__date_started_${id}`} className='form-control'
+                                   defaultValue={date_started}/>
+                        </div>
+
+                        {/* Date Ended */}
+                        <div className='mb-3'>
+                            <label form={`resume_experience__date_ended_${id}`} className='form-label'>Dated
+                                Ended</label>
+                            <input type='text' id={`resume_experience__date_ended_${id}`} className='form-control'
+                                   defaultValue={date_ended}/>
+                        </div>
+                    </div>
+                )
+            }
+
             return (
-                <div key={id}>
-                    <h4>{`Job number ${id}`}</h4>
-
-                    {/* Job Title */}
-                    <div className='mb-3'>
-                        <label form={`resume_experience__job_title_${id}`} className='form-label'>Job Title</label>
-                        <input type='text' id={`resume_experience__job_title_${id}`} className='form-control' defaultValue={job_title}/>
+                <div className='resume__experience'>
+                    <h3>{job_title}</h3>
+                    <h4>{job_employer}</h4>
+                    <div className='resume__experience-header'>
+                        <p><FaRegCalendarAlt/> {date_started} - {date_ended}</p>
+                        <p><FaMapMarkerAlt/> {job_location}</p>
                     </div>
 
-                    {/* Employer */}
-                    <div className='mb-3'>
-                        <label form={`resume_experience__job_employer_${id}`} className='form-label'>Employer</label>
-                        <input type='text' id={`resume_experience__job_employer_${id}`} className='form-control' defaultValue={job_employer}/>
-                    </div>
-
-                    {/* Job Location */}
-                    <div className='mb-3'>
-                        <label form={`resume_experience__job_location_${id}`} className='form-label'>Location</label>
-                        <input type='text' id={`resume_experience__job_location_${id}`} className='form-control' defaultValue={job_location}/>
-                    </div>
-
-                    {/* Job Description */}
-                    <div className='mb-3'>
-                        <label form={`resume_experience__job_description_${id}`} className='form-label'>Description</label>
-                        <textarea id={`resume_experience__job_description_${id}`} className='form-control' rows='6' defaultValue={job_description}/>
-                    </div>
-
-                    {/* Duties */}
-                    <div className='mb-3'>
-                        <label form={`resume_experience__duties_${id}`} className='form-label'>Duties</label>
-                        <textarea id={`resume_experience__duties_${id}`} className='form-control' rows='6' defaultValue={duties}/>
-                    </div>
-
-                    {/* Date Started */}
-                    <div className='mb-3'>
-                        <label form={`resume_experience__date_started_${id}`} className='form-label'>Date Started</label>
-                        <input type='text' id={`resume_experience__date_started_${id}`} className='form-control' defaultValue={date_started}/>
-                    </div>
-
-                    {/* Date Ended */}
-                    <div className='mb-3'>
-                        <label form={`resume_experience__date_ended_${id}`} className='form-label'>Dated Ended</label>
-                        <input type='text' id={`resume_experience__date_ended_${id}`} className='form-control' defaultValue={date_ended}/>
+                    <div className='resume__experience-description'>
+                        <p>{job_description}</p>
+                        <ul>{duties_list}</ul>
                     </div>
                 </div>
-            )
-        }
+            );
+        });
+    }
 
-        return (
-            <div className='resume__experience'>
-                <h3>{job_title}</h3>
-                <h4>{job_employer}</h4>
-                <div className='resume__experience-header'>
-                    <p><FaRegCalendarAlt /> {date_started} - {date_ended}</p>
-                    <p><FaMapMarkerAlt /> {job_location}</p>
-                </div>
+    const defaultView = View(props.experience)
 
-                <div className='resume__experience-description'>
-                    <p>{job_description}</p>
-                    <ul>{duties_list}</ul>
-                </div>
-            </div>
-        );
-    });
+    const addView = [{
+        ID: 'NEW',
+        JOB_TITLE: '',
+        JOB_DESCRIPTION: '',
+        JOB_LOCATION: '',
+        JOB_EMPLOYER: '',
+        DUTIES: JSON.stringify({"roles": ['Insert text here.']}),
+        DATE_STARTED: '2021-04-01',
+        DATE_ENDED: '2021-04-01'
+    }]
 
     return (
         <section>
             <h2>Experience</h2>
-            {view}
+            {defaultView}
+            {/*<div>{View(addView)}</div>*/}
+            {/*<div>{View(addView)}</div>*/}
+            {/*<div>{View(addView)}</div>*/}
         </section>
     )
 }
@@ -371,12 +400,14 @@ class Resume extends Component {
                 // Load column values into columns
                 for (let column = 0; column < sections.length; column++) {
 
+                    console.log(cols[column])
                     // Ensure Duties column is a json object
                     if (cols[column] === 'DUTIES') {
+                        console.log(JSON.parse(sections[column][id].value))
                         values.push(JSON.stringify(sections[column][id].value))
-                        return;
+                    } else {
+                        values.push(sections[column][id].value);
                     }
-                    values.push(sections[column][id].value);
                 }
 
                 // Submit request to SQL server
@@ -384,8 +415,21 @@ class Resume extends Component {
             }
         })
 
+        // Check for empty fields
+        function isFilled(values) {
+            let filled = true;
+
+            values.forEach(value => {
+                if (value === '') filled = false;
+            });
+
+            return filled
+        }
+
         // Patch request
         async function FetchRequest(id, values, cols, table_name) {
+            // if (!isFilled(values)) return;
+
             await fetch('/api', {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
