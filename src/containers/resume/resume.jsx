@@ -1,317 +1,397 @@
 import React, { Component } from 'react';
-import { FaPhoneAlt, FaAt, FaLinkedin, FaMapMarkerAlt, FaRegCalendarAlt } from "react-icons/fa";
+import {
+    FaPhoneAlt, FaAt, FaLinkedin, FaMapMarkerAlt,
+    FaRegCalendarAlt, FaCode, FaBolt, FaReact,
+    FaGamepad, FaHiking, FaGalacticRepublic, FaFingerprint
+} from "react-icons/fa";
+import { Doughnut } from 'react-chartjs-2';
+import {Chart as ChartJS, ArcElement, Legend} from 'chart.js'
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
 import './resume.css';
 
-const HeaderView = props => {
-    const {
-        TITLE: title,
-        SUBTITLE: subtitle,
-    } = props.header[0];
+// Required for chart
+ChartJS.register(ArcElement, Legend, ChartDataLabels);
 
-    if (props.editor) {
+const RenderView = props => {
+
+    // Normalize dates
+    function convertDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})
+    }
+
+    // Bulletize JSON Objects
+    function normalizeJsonList(jsonString) {
+        return JSON.parse(jsonString)['roles'].map(element => {
+            return <li>{element}</li>
+        })
+    }
+
+    // Header block
+    const Header = () => {
+        const {
+            OBJECTIVE: OBJECTIVE,
+            SUBTITLE: SUBTITLE,
+            TITLE: TITLE } = props.header[0];
+
         return (
-            <section className='resume__header'>
-                <div>
-                    <h2>Header</h2>
-
-                    {/* Title */}
-                    <div className='mb-3'>
-                        <label form='resume_header__title' className='form-label'>Resume Title</label>
-                        <input type='text' id='resume_header__title' className='form-control' defaultValue={title}/>
-                    </div>
-
-                    {/* Subtitle */}
-                    <div className='mb-3'>
-                        <label form='resume_header__subtitle' className='form-label'>Subtitle</label>
-                        <input type='text' id='resume_header__subtitle' className='form-control' defaultValue={subtitle}/>
-                    </div>
-                </div>
-            </section>
+            <div className='resume__header'>
+                <h1>{TITLE}</h1>
+                <h2>{SUBTITLE}</h2>
+                <p>{OBJECTIVE}</p>
+            </div>
         )
     }
 
-    return (
-        <section className='resume__header'>
-            <h1>{title}</h1>
-            <p>{subtitle}</p>
-            <div className='resume__header-contact'>
-                <div><FaPhoneAlt /> <p>(901) 498-9869</p></div>
-                <div><FaAt /> <p>OneTonTyler@pm.me</p></div>
-                <div><FaLinkedin /> <p>www.linkedin.com/tyler-a-singleton</p></div>
-                <div><FaMapMarkerAlt /> <p>Littleton, CO 80127</p></div>
-            </div>
-        </section>
-    )
-}
-
-const SkillsView = props => {
-    const {
-        LANGUAGES: languages,
-        STUDIES: studies,
-        ATTRIBUTES: attributes
-    } = props.skills[0];
-
-    if (props.editor) {
+    const Footer = () => {
         return (
-            <section>
-                <h2>Skills and Qualifications</h2>
-                <div>
-                    {/* Tools and Languages */}
-                    <div className='mb-3'>
-                        <label form='resume_skills__languages' className='form-label'>Languages</label>
-                        <input type='text' id='resume_skills__languages' className='form-control' defaultValue={languages}/>
-                    </div>
-
-                    {/* Studies of Interest */}
-                    <div className='mb-3'>
-                        <label form='resume_skills__studies' className='form-label'>Studies of Interest</label>
-                        <input type='text' id='resume_skills__studies' className='form-control' defaultValue={studies}/>
-                    </div>
-
-                    {/* Attributes */}
-                    <div className='mb-3'>
-                        <label form='resume_skills__attributes' className='form-label'>Attributes</label>
-                        <input type='text' id='resume_skills__attributes' className='form-control' defaultValue={attributes}/>
-                    </div>
-                </div>
-            </section>
+            <div>
+                <h2>Contact me</h2>
+            </div>
         )
     }
 
-    return (
-        <section>
-            <h2>Skills and Qualifications</h2>
-            <div className='resume__skills'>
-                <div>
-                    <p>Tools and Languages</p>
-                    <p>{languages}</p>
-                </div>
-
-                <div>
-                    <p>Studies of Interest</p>
-                    <p>{studies}</p>
-                </div>
-
-                <div>
-                    <p>Attributes</p>
-                    <p>{attributes}</p>
-                </div>
-            </div>
-        </section>
-    )
-}
-
-const JobView = props => {
-    function View(experience) {
-        return experience.map(job => {
-
+    // Left column
+    const WorkExperience = () => {
+        const entries = props.experience.map(element => {
             let {
-                ID: id,
-                JOB_TITLE: job_title,
-                JOB_DESCRIPTION: job_description,
-                JOB_LOCATION: job_location,
-                JOB_EMPLOYER: job_employer,
-                DUTIES: duties,
-                DATE_STARTED: date_started,
-                DATE_ENDED: date_ended
-            } = job;
+                ID: ID,
+                JOB_TITLE: JOB_TITLE,
+                JOB_DESCRIPTION: JOB_DESCRIPTION,
+                JOB_LOCATION: JOB_LOCATION,
+                JOB_EMPLOYER: JOB_EMPLOYER,
+                DUTIES: DUTIES,
+                DATE_STARTED: DATE_STARTED,
+                DATE_ENDED: DATE_ENDED
+            } = element;
 
-            // Normalize dates
-            date_started = date_started.slice(0, 10);
-            date_ended = date_ended.slice(0, 10);
-
-            // Get all duties
-            let duties_list = JSON.parse(duties)['roles'].map((role, idx) => {
-                return <li key={`${role}_${idx}`}>{role}</li>;
-            });
-
-            if (props.editor) {
-                return (
-                    <div key={id}>
-                        <h4>{`Job number ${id}`}</h4>
-
-                        {/* Job Title */}
-                        <div className='mb-3'>
-                            <label form={`resume_experience__job_title_${id}`} className='form-label'>Job Title</label>
-                            <input type='text' id={`resume_experience__job_title_${id}`} className='form-control'
-                                   defaultValue={job_title}/>
-                        </div>
-
-                        {/* Employer */}
-                        <div className='mb-3'>
-                            <label form={`resume_experience__job_employer_${id}`}
-                                   className='form-label'>Employer</label>
-                            <input type='text' id={`resume_experience__job_employer_${id}`} className='form-control'
-                                   defaultValue={job_employer}/>
-                        </div>
-
-                        {/* Job Location */}
-                        <div className='mb-3'>
-                            <label form={`resume_experience__job_location_${id}`}
-                                   className='form-label'>Location</label>
-                            <input type='text' id={`resume_experience__job_location_${id}`} className='form-control'
-                                   defaultValue={job_location}/>
-                        </div>
-
-                        {/* Job Description */}
-                        <div className='mb-3'>
-                            <label form={`resume_experience__job_description_${id}`}
-                                   className='form-label'>Description</label>
-                            <textarea id={`resume_experience__job_description_${id}`} className='form-control' rows='6'
-                                      defaultValue={job_description}/>
-                        </div>
-
-                        {/* Duties */}
-                        <div className='mb-3'>
-                            <label form={`resume_experience__duties_${id}`} className='form-label'>Duties</label>
-                            <textarea id={`resume_experience__duties_${id}`} className='form-control' rows='6'
-                                      defaultValue={duties}/>
-                        </div>
-
-                        {/* Date Started */}
-                        <div className='mb-3'>
-                            <label form={`resume_experience__date_started_${id}`} className='form-label'>Date
-                                Started</label>
-                            <input type='text' id={`resume_experience__date_started_${id}`} className='form-control'
-                                   defaultValue={date_started}/>
-                        </div>
-
-                        {/* Date Ended */}
-                        <div className='mb-3'>
-                            <label form={`resume_experience__date_ended_${id}`} className='form-label'>Dated
-                                Ended</label>
-                            <input type='text' id={`resume_experience__date_ended_${id}`} className='form-control'
-                                   defaultValue={date_ended}/>
-                        </div>
-                    </div>
-                )
-            }
+            DATE_STARTED = convertDateTime(DATE_STARTED);
+            DATE_ENDED = convertDateTime(DATE_ENDED);
+            DUTIES = normalizeJsonList(DUTIES);
 
             return (
                 <div className='resume__experience'>
-                    <h3>{job_title}</h3>
-                    <h4>{job_employer}</h4>
                     <div className='resume__experience-header'>
-                        <p><FaRegCalendarAlt/> {date_started} - {date_ended}</p>
-                        <p><FaMapMarkerAlt/> {job_location}</p>
+                        <h3>{JOB_TITLE}</h3>
+                        <h4>{JOB_EMPLOYER}</h4>
+                        <p className='resume__experience-dates'>
+                            <span><FaRegCalendarAlt/> {DATE_STARTED} - {DATE_ENDED}</span>
+                            <span><FaMapMarkerAlt/> {JOB_LOCATION}</span>
+                        </p>
                     </div>
 
                     <div className='resume__experience-description'>
-                        <p>{job_description}</p>
-                        <ul>{duties_list}</ul>
-                    </div>
-                </div>
-            );
-        });
-    }
-
-    const defaultView = View(props.experience)
-
-    const addView = [{
-        ID: 'NEW',
-        JOB_TITLE: '',
-        JOB_DESCRIPTION: '',
-        JOB_LOCATION: '',
-        JOB_EMPLOYER: '',
-        DUTIES: JSON.stringify({"roles": ['Insert text here.']}),
-        DATE_STARTED: '2021-04-01',
-        DATE_ENDED: '2021-04-01'
-    }]
-
-    return (
-        <section>
-            <h2>Experience</h2>
-            {defaultView}
-            {/*<div>{View(addView)}</div>*/}
-            {/*<div>{View(addView)}</div>*/}
-            {/*<div>{View(addView)}</div>*/}
-        </section>
-    )
-}
-
-const EducationView = props => {
-
-    const education = props.education.map(element => {
-        let {
-            ID: id,
-            SCHOOL: school,
-            DEGREE: degree,
-            DATE_ENDED: date_ended
-        } = element;
-
-        // Normalize date
-        date_ended = date_ended.slice(0, 10);
-
-        if (props.editor) {
-            return(
-                <div key={id}>
-                    <h4>{`Certification ${id}`}</h4>
-                    {/* School */}
-                    <div className='mb-3'>
-                        <label form={`resume_education__school_${id}`} className='form-label'>School Name</label>
-                        <input type='text' id={`resume_education__school_${id}`} className='form-control' defaultValue={school}/>
+                        <p>{JOB_DESCRIPTION}</p>
                     </div>
 
-                    {/* Degree */}
-                    <div className='mb-3'>
-                        <label form={`resume_education__degree_${id}`} className='form-label'>Degree</label>
-                        <input type='text' id={`resume_education__degree_${id}`} className='form-control' defaultValue={degree}/>
+                    <div>
+                        <ul>{DUTIES}</ul>
                     </div>
 
-                    {/* Date Ended */}
-                    <div className='mb-3'>
-                        <label form={`resume_education__date_ended_${id}`} className='form-label'>Date Received</label>
-                        <input type='text' id={`resume_education__date_ended_${id}`} className='form-control' defaultValue={date_ended}/>
-                    </div>
                 </div>
             )
-        }
+        })
 
         return (
-            <div className='resume__education-degree' key={id}>
-                <p>{school}</p>
-                <div className='resume__education-degree__cluster'>
-                    <p>{degree}</p>
-                    <p>{date_ended}</p>
+            <div className='resume__experience-container'>
+                <h2>Experience</h2>
+                {entries}
+            </div>
+        )
+    }
+
+    const Education = () => {
+        let {
+            SCHOOL: SCHOOL,
+            DEGREE: DEGREE,
+            DATE_STARTED: DATE_STARTED,
+            DATE_ENDED: DATE_ENDED
+        } = props.education[0];
+
+        DATE_STARTED = convertDateTime(DATE_STARTED);
+        DATE_ENDED = convertDateTime(DATE_ENDED);
+
+        return (
+            <div className='resume__education'>
+                <h2>Education</h2>
+                <h3>{DEGREE}</h3>
+                <h4>{SCHOOL}</h4>
+                <p><FaRegCalendarAlt/> {DATE_STARTED} - {DATE_ENDED}</p>
+            </div>
+        )
+    }
+
+    // Right column
+    const SkillsAndAttributes = () => {
+        const {
+            LANGUAGES: LANGUAGES,
+            STUDIES: STUDIES,
+            ATTRIBUTES: ATTRIBUTES
+        } = props.skills[0];
+
+        return (
+            <div className='resume__skills'>
+                <h2>Achievements</h2>
+                <div className='resume__skills-body'>
+                    <h3><FaCode/></h3>
+                    <div>
+                        <h3>Languages</h3>
+                        <p>{LANGUAGES}</p>
+                    </div>
+                </div>
+
+                <div className='resume__skills-body'>
+                    <h3><FaBolt/></h3>
+                    <div>
+                        <h3>Studies</h3>
+                        <p>{STUDIES}</p>
+                    </div>
+                </div>
+
+                <div className='resume__skills-body'>
+                    <h3><FaReact/></h3>
+                    <div>
+                        <h3>Attributes</h3>
+                        <p>{ATTRIBUTES}</p>
+                    </div>
                 </div>
             </div>
         )
-    })
+    }
 
-    return (
-        <section>
-            <h2>Education</h2>
-            {education}
-        </section>
-    )
-}
+    const MyTime = () => {
+        const data = {
+            labels: ['A', 'B', 'C', 'D'],
+            datasets: [
+                {
+                    data: [40, 30, 20, 10],
+                    backgroundColor: [
+                        'hsl(207, 44%, 49%)',
+                        'hsl(207, 44%, 60%)',
+                        'hsl(207, 44%, 70%)',
+                        'hsl(207, 44%, 80%)'
+                    ],
+                    borderColor: 'white',
+                    borderWidth: 5,
+                },
+            ],
+        };
 
-const RenderView = props => {
-    if (props.editorActive) {
+        const options = {
+            plugins: {
+                legend: {
+                    display: false
+                },
+                datalabels: {
+                    formatter: (value, ctx) => {
+                        const label = ctx.chart.data.labels[ctx.dataIndex];
+                        return label;
+                    },
+                    color: '#fff',
+                    backgroundColor: '#404040',
+                    borderRadius: 3,
+                    borderWidth: 10,
+                },
+            }
+        }
+
         return (
-            <form className='resume__container' onSubmit={props.submit}>
-                <HeaderView header={props.header} editor={props.editorActive}/>
-                <SkillsView skills={props.skills} editor={props.editorActive}/>
-                <JobView experience={props.experience} editor={props.editorActive}/>
-                <EducationView education={props.education} editor={props.editorActive}/>
+            <div className='resume__time'>
+                <h2>My Time</h2>
+                <Doughnut data={data} options={options}/>
 
-                <div className='button-group'>
-                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
-                    <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
-                    <button type='reset' className='btn btn-outline-primary'>Cancel</button>
-                    <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
+                <div>
+                    <p>A</p>
+                    <p>Rewriting programs to optimize code for readability and reusability</p>
+
+                    <p>B</p>
+                    <p>Learning new languages</p>
+
+                    <p>C</p>
+                    <p>Studying for finals</p>
+
+                    <p>D</p>
+                    <p>Spending time outdoors with my dog</p>
                 </div>
-            </form>
+            </div>
+        )
+    }
+
+    const Certifications = () => {
+        const entries = props.education.map(element => {
+            let {
+                ID: ID,
+                SCHOOL: SCHOOL,
+                DEGREE: DEGREE,
+                DATE_STARTED: DATE_STARTED,
+                DATE_ENDED: DATE_ENDED
+            } = element;
+
+            DATE_STARTED = convertDateTime(DATE_STARTED);
+            DATE_ENDED = convertDateTime(DATE_ENDED);
+
+            if (ID) {
+                return (
+                    <div className='resume__education'>
+                        <h3>{DEGREE}</h3>
+                        <h4>{SCHOOL}</h4>
+                        <p><FaRegCalendarAlt/> {DATE_STARTED} - {DATE_ENDED}</p>
+                    </div>
+                )
+            }
+        })
+
+        return (
+            <div>
+                <h2>Certifications</h2>
+                {entries}
+            </div>
+        )
+    }
+
+    const Passions = () => {
+        return (
+            <div>
+                <h2>Passions</h2>
+
+                <div className='resume__passions-body'>
+                    <h3><FaHiking/></h3>
+                    <p>I love to explore and try to hike a new trail every month.</p>
+                </div>
+
+                <div className='resume__passions-body'>
+                    <h3><FaGalacticRepublic/></h3>
+                    <p>Meeting new people, joining different clubs to help stay active and involved.</p>
+                </div>
+
+                <div className='resume__passions-body'>
+                    <h3><FaFingerprint/></h3>
+                    <p>Studying machine learning and AI algorithms, as they are becoming more common within our daily lives.</p>
+                </div>
+            </div>
         )
     }
 
     return (
         <div className='resume__container'>
-            <HeaderView header={props.header} editor={props.editorActive}/>
-            <SkillsView skills={props.skills} editor={props.editorActive}/>
-            <JobView experience={props.experience} editor={props.editorActive}/>
-            <EducationView education={props.education} editor={props.editorActive}/>
+            <Header/>
+
+            <div className='resume__container-body'>
+                {/* Left Column */}
+                <div>
+                    <WorkExperience/>
+                    <Education />
+                </div>
+
+                {/* Right Column */}
+                <div>
+                    <SkillsAndAttributes/>
+                    <MyTime/>
+                    <Certifications/>
+                    <Passions/>
+                </div>
+            </div>
+
+            <Footer/>
         </div>
+    )
+}
+
+const EditorView = props => {
+    /* Displays the Section Title with Headers and Values
+     *
+     * Params:
+     * DefaultView - Adds empty blocks to its respective block (int)
+     * SectionTitle - The blue title for each block
+     * Block - properties
+     */
+    function Display(DefaultView, SectionTitle, Block) {
+        // Helper function for creating headers
+        function DisplaySectionTitle(ID) {
+            if (SectionTitle !== '') return <h4>{SectionTitle} {ID}</h4>
+        }
+
+        // Helper function to display more visually pleasing rows
+        function DisplayInputField(labelID, defaultValue, header) {
+            let rows = 2;
+            if (defaultValue.length > 90) {
+                rows = 6;
+            }
+
+            return (
+                <div className='mb-3' key={labelID}>
+                    <label form={labelID} className='form-label'>{header}</label>
+                    <textarea id={labelID} className='form-control' defaultValue={defaultValue} rows={rows}/>
+                </div>
+            )
+        }
+
+        // Create empty objects
+        if (DefaultView) {
+            for (let i = 0; i < DefaultView; i++) {
+                const Default = {};
+                Object.keys(Block[0]).map(element => {
+                    return (element === 'ID') ? Default[element] = Block.length : Default[element] = '';
+                });
+
+                Block.push(Default);
+            }
+        }
+
+        // Returns a section for each block
+        return Block.map(element => {
+            const Headers = Object.keys(element);
+            const ID = element[Headers.shift()];
+
+            // Creates a form entry for each element
+            const View = Headers.map(header => {
+                return DisplayInputField(`${ID}__${header}`, element[header], header);
+            });
+
+            return (
+                <div key={`${ID}__${SectionTitle}`}>
+                    <div className='resume__editor-section'>
+                        {DisplaySectionTitle(ID)}
+                        {View}
+
+                        <div className='button-group'>
+                            <button type='submit' className='btn btn-outline-primary active'>Save</button>
+                            <button type='submit' className='btn btn-outline-primary'>Delete</button>
+                            <button type='submit' className='btn btn-outline-primary'>Hide</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        })
+    }
+
+    const HeaderView = Display(0, '', props.header);
+    const SkillsView = Display(0, '',  props.skills);
+    const ExperienceView = Display(1,  'Job Number', props.experience);
+    const EducationView = Display(1, 'Certificate Number', props.education);
+
+    return (
+        <form className='resume__container'>
+            <h1>Title Block</h1>
+            <section>{HeaderView}</section>
+
+            <h1>Skills Block</h1>
+            <section>{SkillsView}</section>
+
+            <h1>Work Experience</h1>
+            <section>{ExperienceView}</section>
+
+            <h1>Education</h1>
+            <section>{EducationView}</section>
+
+            <div className='button-group'>
+                <button type='submit' className='btn btn-outline-primary active'>Submit</button>
+                <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
+                <button type='reset' className='btn btn-outline-primary'>Cancel</button>
+                <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
+            </div>
+        </form>
     )
 }
 
@@ -320,7 +400,7 @@ class Resume extends Component {
         super(props);
         this.state = {
             hasError: false,
-            editorActive: true,
+            editorActive: false,
             header: {},
             skills: {},
             workExperience: {},
@@ -442,16 +522,26 @@ class Resume extends Component {
             return
         }
 
+        if (this.state.editorActive) {
+            return (
+                <EditorView
+                    header={this.state.header}
+                    skills={this.state.skills}
+                    experience={this.state.workExperience}
+                    education={this.state.education}
+                    submit={this.handleSubmit}
+                />
+            )
+        }
+
         return (
-            <RenderView
-                editorActive={this.state.editorActive}
-                header={this.state.header}
-                skills={this.state.skills}
-                experience={this.state.workExperience}
-                education={this.state.education}
-                submit={this.handleSubmit}
+            <RenderView header={this.state.header}
+                        skills={this.state.skills}
+                        experience={this.state.workExperience}
+                        education={this.state.education}
             />
         )
+
     }
 
 }
