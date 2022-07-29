@@ -1,14 +1,23 @@
-import React, { Component } from 'react';
-import {
-    FaPhoneAlt, FaAt, FaLinkedin, FaMapMarkerAlt,
-    FaRegCalendarAlt, FaCode, FaBolt, FaReact,
-    FaGamepad, FaHiking, FaGalacticRepublic, FaFingerprint
-} from "react-icons/fa";
-import { Doughnut } from 'react-chartjs-2';
-import {Chart as ChartJS, ArcElement, Legend} from 'chart.js'
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-
 import './resume.css';
+import React, {Component} from 'react';
+import {
+    FaAt,
+    FaBolt,
+    FaCode,
+    FaFingerprint,
+    FaGalacticRepublic,
+    FaHiking,
+    FaLinkedin,
+    FaMapMarkerAlt,
+    FaPhoneAlt,
+    FaReact,
+    FaRegCalendarAlt
+} from 'react-icons/fa';
+
+// Necessary imports for doughnut graph
+import {Doughnut} from 'react-chartjs-2';
+import {ArcElement, Chart as ChartJS, Legend} from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 // Required for chart
 ChartJS.register(ArcElement, Legend, ChartDataLabels);
@@ -31,9 +40,9 @@ const RenderView = props => {
     // Header block
     const Header = () => {
         const {
-            OBJECTIVE: OBJECTIVE,
-            SUBTITLE: SUBTITLE,
-            TITLE: TITLE } = props.header[0];
+            OBJECTIVE,
+            SUBTITLE,
+            TITLE } = props.header[0];
 
         return (
             <div className='resume__header'>
@@ -44,25 +53,17 @@ const RenderView = props => {
         )
     }
 
-    const Footer = () => {
-        return (
-            <div>
-                <h2>Contact me</h2>
-            </div>
-        )
-    }
-
     const WorkExperience = () => {
         const entries = props.experience.map(element => {
             let {
-                ID: ID,
-                JOB_TITLE: JOB_TITLE,
-                JOB_DESCRIPTION: JOB_DESCRIPTION,
-                JOB_LOCATION: JOB_LOCATION,
-                JOB_EMPLOYER: JOB_EMPLOYER,
-                DUTIES: DUTIES,
-                DATE_STARTED: DATE_STARTED,
-                DATE_ENDED: DATE_ENDED
+                ID,
+                JOB_TITLE,
+                JOB_DESCRIPTION,
+                JOB_LOCATION,
+                JOB_EMPLOYER,
+                DUTIES,
+                DATE_STARTED,
+                DATE_ENDED
             } = element;
 
             DATE_STARTED = convertDateTime(DATE_STARTED);
@@ -70,7 +71,7 @@ const RenderView = props => {
             DUTIES = normalizeJsonList(DUTIES);
 
             return (
-                <div className='resume__experience'>
+                <div className='resume__experience' key={`${ID}__experience`}>
                     <div className='resume__experience-header'>
                         <h3>{JOB_TITLE}</h3>
                         <h4>{JOB_EMPLOYER}</h4>
@@ -102,10 +103,10 @@ const RenderView = props => {
 
     const Education = () => {
         let {
-            SCHOOL: SCHOOL,
-            DEGREE: DEGREE,
-            DATE_STARTED: DATE_STARTED,
-            DATE_ENDED: DATE_ENDED
+            SCHOOL,
+            DEGREE,
+            DATE_STARTED,
+            DATE_ENDED
         } = props.education[0];
 
         DATE_STARTED = convertDateTime(DATE_STARTED);
@@ -123,9 +124,9 @@ const RenderView = props => {
 
     const SkillsAndAttributes = () => {
         const {
-            LANGUAGES: LANGUAGES,
-            STUDIES: STUDIES,
-            ATTRIBUTES: ATTRIBUTES
+            LANGUAGES,
+            STUDIES,
+            ATTRIBUTES
         } = props.skills[0];
 
         return (
@@ -183,8 +184,7 @@ const RenderView = props => {
                 },
                 datalabels: {
                     formatter: (value, ctx) => {
-                        const label = ctx.chart.data.labels[ctx.dataIndex];
-                        return label;
+                        return ctx.chart.data.labels[ctx.dataIndex];
                     },
                     color: '#fff',
                     backgroundColor: '#404040',
@@ -219,16 +219,17 @@ const RenderView = props => {
     const Certifications = () => {
         const entries = props.education.map(element => {
             let {
-                ID: ID,
-                SCHOOL: SCHOOL,
-                DEGREE: DEGREE,
-                DATE_STARTED: DATE_STARTED,
-                DATE_ENDED: DATE_ENDED
+                ID,
+                SCHOOL,
+                DEGREE,
+                DATE_STARTED,
+                DATE_ENDED
             } = element;
 
             DATE_STARTED = convertDateTime(DATE_STARTED);
             DATE_ENDED = convertDateTime(DATE_ENDED);
 
+            // Return a value if and only if it's not the first result
             if (ID) {
                 return (
                     <div className='resume__education'>
