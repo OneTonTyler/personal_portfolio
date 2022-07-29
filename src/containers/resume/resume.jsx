@@ -52,7 +52,6 @@ const RenderView = props => {
         )
     }
 
-    // Left column
     const WorkExperience = () => {
         const entries = props.experience.map(element => {
             let {
@@ -122,7 +121,6 @@ const RenderView = props => {
         )
     }
 
-    // Right column
     const SkillsAndAttributes = () => {
         const {
             LANGUAGES: LANGUAGES,
@@ -273,6 +271,33 @@ const RenderView = props => {
         )
     }
 
+    const ContactMe = () => {
+        return (
+            <div>
+                <h2>Contact Me</h2>
+                <div className='resume__passions-body'>
+                    <h3><FaPhoneAlt/></h3>
+                    <p>(901) 498-9869</p>
+                </div>
+
+                <div className='resume__passions-body'>
+                    <h3><FaAt/></h3>
+                    <p>TylerAllenSingleton@pm.me</p>
+                </div>
+
+                <div className='resume__passions-body'>
+                    <h3><FaLinkedin/></h3>
+                    <p><a href='www.linkedin.com/in/tyler-a-singleton'>www.linkedin.com/in/tyler-a-singleton</a></p>
+                </div>
+
+                <div className='resume__passions-body'>
+                    <h3><FaMapMarkerAlt/></h3>
+                    <p>Littleton, CO 80127</p>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className='resume__container'>
             <Header/>
@@ -281,19 +306,18 @@ const RenderView = props => {
                 {/* Left Column */}
                 <div>
                     <WorkExperience/>
-                    <Education />
+                    <Education/>
+                    <Certifications/>
                 </div>
 
                 {/* Right Column */}
                 <div>
                     <SkillsAndAttributes/>
                     <MyTime/>
-                    <Certifications/>
                     <Passions/>
+                    <ContactMe/>
                 </div>
             </div>
-
-            <Footer/>
         </div>
     )
 }
