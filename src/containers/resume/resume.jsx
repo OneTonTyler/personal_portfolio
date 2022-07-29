@@ -31,9 +31,9 @@ const RenderView = props => {
     }
 
     // Bulletize JSON Objects
-    function normalizeJsonList(jsonString) {
-        return JSON.parse(jsonString)['roles'].map(element => {
-            return <li>{element}</li>
+    function normalizeJsonList(jsonString, key) {
+        return JSON.parse(jsonString)['roles'].map((element, idx) => {
+            return <li key={`${key}-${idx}`}>{element}</li>
         })
     }
 
@@ -68,7 +68,7 @@ const RenderView = props => {
 
             DATE_STARTED = convertDateTime(DATE_STARTED);
             DATE_ENDED = convertDateTime(DATE_ENDED);
-            DUTIES = normalizeJsonList(DUTIES);
+            DUTIES = normalizeJsonList(DUTIES, `${ID}__duties`);
 
             return (
                 <div className='resume__experience' key={`${ID}__experience`}>
@@ -191,7 +191,8 @@ const RenderView = props => {
                     borderRadius: 3,
                     borderWidth: 10,
                 },
-            }
+            },
+            responsive: true,
         }
 
         return (
@@ -232,7 +233,7 @@ const RenderView = props => {
             // Return a value if and only if it's not the first result
             if (ID) {
                 return (
-                    <div className='resume__education'>
+                    <div className='resume__education' key={`${ID}__education`}>
                         <h3>{DEGREE}</h3>
                         <h4>{SCHOOL}</h4>
                         <p><FaRegCalendarAlt/> {DATE_STARTED} - {DATE_ENDED}</p>
