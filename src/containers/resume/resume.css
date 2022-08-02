@@ -180,3 +180,16 @@ ul {
     border-radius: 10px;
     border: 2px solid lightgray;
 }
+
+/* Buttons */
+.button-group {
+    display: flex;
+    gap: 1rem;
+
+    margin-bottom: 1rem;
+}
+
+.button-group .btn:focus {
+    background: white;
+    color: #0d6efd;
+}

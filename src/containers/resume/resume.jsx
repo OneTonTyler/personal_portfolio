@@ -301,7 +301,7 @@ const RenderView = props => {
     }
 
     return (
-        <div className='resume__container'>
+        <div>
             <Header/>
 
             <div className='resume__container-body'>
@@ -332,7 +332,10 @@ const EditorView = props => {
      * SectionTitle - The blue title for each block
      * Block - properties
      */
-    function Display(DefaultView, SectionTitle, Block) {
+    function Display(DefaultView, SectionTitle, Block, BlockTitle) {
+        // Make a copy else Block gets changed
+        const BlockCopy = Block.map(element => element);
+
         // Helper function for creating headers
         function DisplaySectionTitle(ID) {
             if (SectionTitle !== '') return <h4>{SectionTitle} {ID}</h4>
@@ -344,6 +347,9 @@ const EditorView = props => {
             if (defaultValue.length > 90) {
                 rows = 6;
             }
+
+            // Normalize Dates
+            if (header === 'DATE_STARTED' || header === 'DATE_ENDED') defaultValue = defaultValue.slice(0, 10);
 
             return (
                 <div className='mb-3' key={labelID}>
@@ -361,18 +367,18 @@ const EditorView = props => {
                     return (element === 'ID') ? Default[element] = Block.length : Default[element] = '';
                 });
 
-                Block.push(Default);
+                BlockCopy.push(Default);
             }
         }
 
         // Returns a section for each block
-        return Block.map(element => {
+        return BlockCopy.map(element => {
             const Headers = Object.keys(element);
             const ID = element[Headers.shift()];
 
             // Creates a form entry for each element
             const View = Headers.map(header => {
-                return DisplayInputField(`${ID}__${header}`, element[header], header);
+                return DisplayInputField(`${BlockTitle}__${header.toLowerCase()}__${ID}`, element[header], header);
             });
 
             return (
@@ -380,44 +386,41 @@ const EditorView = props => {
                     <div className='resume__editor-section'>
                         {DisplaySectionTitle(ID)}
                         {View}
-
-                        <div className='button-group'>
-                            <button type='submit' className='btn btn-outline-primary active'>Save</button>
-                            <button type='submit' className='btn btn-outline-primary'>Delete</button>
-                            <button type='submit' className='btn btn-outline-primary'>Hide</button>
-                        </div>
                     </div>
                 </div>
             );
         })
     }
 
-    const HeaderView = Display(0, '', props.header);
-    const SkillsView = Display(0, '',  props.skills);
-    const ExperienceView = Display(1,  'Job Number', props.experience);
-    const EducationView = Display(1, 'Certificate Number', props.education);
+    const HeaderView = Display(0, '', props.header, 'resume_header');
+    const SkillsView = Display(0, '',  props.skills, 'resume_skills');
+    const ExperienceView = Display(1,  'Job Number', props.experience, 'resume_experience');
+    const EducationView = Display(1, 'Certificate Number', props.education, 'resume_education');
 
     return (
-        <form className='resume__container'>
-            <h1>Title Block</h1>
-            <section>{HeaderView}</section>
+        <div className='resume__container'>
+            <h1>Editor View</h1>
+            <form onSubmit={props.submit} onReset={props.cancel}>
+                <h2>Title Block</h2>
+                <section>{HeaderView}</section>
 
-            <h1>Skills Block</h1>
-            <section>{SkillsView}</section>
+                <h2>Skills Block</h2>
+                <section>{SkillsView}</section>
 
-            <h1>Work Experience</h1>
-            <section>{ExperienceView}</section>
+                <h2>Work Experience</h2>
+                <section>{ExperienceView}</section>
 
-            <h1>Education</h1>
-            <section>{EducationView}</section>
+                <h2>Education</h2>
+                <section>{EducationView}</section>
 
-            <div className='button-group'>
-                <button type='submit' className='btn btn-outline-primary active'>Submit</button>
-                <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
-                <button type='reset' className='btn btn-outline-primary'>Cancel</button>
-                <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
-            </div>
-        </form>
+                <div className='button-group'>
+                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
+                    <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
+                    <button type='reset' className='btn btn-outline-primary'>Cancel</button>
+                    <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
+                </div>
+            </form>
+        </div>
     )
 }
 
@@ -426,14 +429,17 @@ class Resume extends Component {
         super(props);
         this.state = {
             hasError: false,
-            editorActive: false,
-            header: {},
-            skills: {},
-            workExperience: {},
-            education: {},
+            editorActive: true,
+            header: {}, original_header: {},
+            skills: {}, original_skills: {},
+            workExperience: {}, original_workExperience: {},
+            education: {}, original_education: {},
         }
 
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleCancel = this.handleCancel.bind(this);
+        this.toggleEditor = this.toggleEditor.bind(this);
+        this.handleRender = this.handleRender.bind(this);
     }
 
     async componentDidMount() {
@@ -454,10 +460,10 @@ class Resume extends Component {
         }
 
         this.setState({
-            header: responses['resume_header'],
-            skills: responses['resume_skills'],
-            workExperience: responses['resume_experience'],
-            education: responses['resume_education']
+            header: responses['resume_header'], original_header: responses['resume_header'],
+            skills: responses['resume_skills'], original_skills: responses['resume_skills'],
+            workExperience: responses['resume_experience'], original_workExperience: responses['resume_experience'],
+            education: responses['resume_education'], original_education: responses['resume_education']
         });
     }
 
@@ -472,10 +478,15 @@ class Resume extends Component {
         return body;
     }
 
+    static getDerivedStateFromError(error) {
+        // Update state so the next render will show the fallback UI.
+        return { hasError: true };
+    }
+
     async handleSubmit(event) {
-        const education_cols = ['SCHOOL', 'DEGREE', 'DATE_ENDED'];
+        const education_cols = ['SCHOOL', 'DEGREE', 'DATE_STARTED', 'DATE_ENDED'];
         const experience_cols = ['JOB_TITLE', 'JOB_LOCATION', 'JOB_EMPLOYER', 'JOB_DESCRIPTION', 'DUTIES', 'DATE_STARTED', 'DATE_ENDED'];
-        const header_cols = ['TITLE', 'SUBTITLE'];
+        const header_cols = ['TITLE', 'SUBTITLE', 'OBJECTIVE'];
         const skills_cols = ['LANGUAGES', 'STUDIES', 'ATTRIBUTES'];
 
         const tables = {
@@ -505,29 +516,16 @@ class Resume extends Component {
 
                 // Load column values into columns
                 for (let column = 0; column < sections.length; column++) {
-                    values.push(sections[column][id].value);
+                    if (sections[column][id].value !== '') values.push(sections[column][id].value);
                 }
 
                 // Submit request to SQL server
-                FetchRequest(id, values, cols, table_name)
+                if (values) FetchRequest(id, values, cols, table_name)
             }
         })
 
-        // Check for empty fields
-        function isFilled(values) {
-            let filled = true;
-
-            values.forEach(value => {
-                if (value === '') filled = false;
-            });
-
-            return filled
-        }
-
         // Patch request
         async function FetchRequest(id, values, cols, table_name) {
-            // if (!isFilled(values)) return;
-
             await fetch('/api', {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
@@ -543,9 +541,101 @@ class Resume extends Component {
         event.preventDefault();
     }
 
+    handleRender() {
+        const education_cols = ['SCHOOL', 'DEGREE', 'DATE_STARTED', 'DATE_ENDED'];
+        const experience_cols = ['JOB_TITLE', 'JOB_LOCATION', 'JOB_EMPLOYER', 'JOB_DESCRIPTION', 'DUTIES', 'DATE_STARTED', 'DATE_ENDED'];
+        const header_cols = ['TITLE', 'SUBTITLE', 'OBJECTIVE'];
+        const skills_cols = ['LANGUAGES', 'STUDIES', 'ATTRIBUTES'];
+
+        const tables = {
+            resume_education: education_cols,
+            resume_experience: experience_cols,
+            resume_header: header_cols,
+            resume_skills: skills_cols
+        };
+
+        const states = {'education':[], 'experience':[], 'header':[], 'skills':[]};
+
+        // Create a list of states
+        Object.keys(tables).forEach((table_name, idx) => {
+            let cols = [];
+            let sections = [];
+            let newState = [];
+
+            // Get a list of all sections
+            tables[table_name].forEach(col => {
+                let id = `${table_name}__${col.toLowerCase()}`;
+                let value = document.body.querySelectorAll(`[id^=${id}]`);
+
+                // Push to columns and sections
+                cols.push(col);
+                sections.push(value);
+            });
+
+            // const foo = sections.map((element, id) => {
+            //     newState['ID'] = id;
+            //
+            //     for (let colNumber = 0; colNumber < sections.length; colNumber++) {
+            //         if (sections[colNumber][id].value !== '') {
+            //             newState[cols[colNumber]] = sections[colNumber][id].value;
+            //         }
+            //     }
+            //
+            //     return newState;
+            // })
+            //
+            // console.log(foo)
+
+            // for (let id  = 0; id < sections[0].length; id++) {
+            //     newState['ID'] = id;
+            //     // Load column values into columns
+            //     for (let column = 0; column < sections.length; column++) {
+            //         if (sections[column][id].value !== '') {
+            //             newState[cols[column]] = sections[column][id].value;
+            //         }
+            //     }
+            //
+            //     states[Object.keys(states)[idx]].push(id)
+            //     console.log(states[Object.keys(states)[idx]])
+            //     console.log(newState)
+            // }
+
+        });
+
+        // Update state
+        // console.log(states['education'])
+        // console.log(this.state['education'])
+        //
+        // this.setState({
+        //     education: states['education'],
+        //     experience: states['experience'],
+        //     header: states['header'],
+        //     skills: states['skills']
+        // })
+    }
+
+    handleCancel() {
+        this.setState(
+            {
+                header: this.state.original_header,
+                skills: this.state.original_skills,
+                workExperience: this.state.original_workExperience,
+                education: this.state.original_education
+            }
+        );
+    }
+
+    toggleEditor() {
+        this.setState({editorActive: !this.state.editorActive});
+    }
+
     render() {
-        if (!this.state.header[0]) {
-            return
+        if (!this.state.header[0] || this.state.hasError) {
+            return (
+                <div>
+                    <p>Something went wrong</p>
+                </div>
+            )
         }
 
         if (this.state.editorActive) {
@@ -556,20 +646,25 @@ class Resume extends Component {
                     experience={this.state.workExperience}
                     education={this.state.education}
                     submit={this.handleSubmit}
+                    cancle={this.handleCancel}
+                    editor={this.toggleEditor}
+                    render={this.handleRender}
                 />
             )
         }
 
         return (
-            <RenderView header={this.state.header}
-                        skills={this.state.skills}
-                        experience={this.state.workExperience}
-                        education={this.state.education}
-            />
-        )
-
+            <div className='resume__container'>
+                <RenderView header={this.state.header}
+                            skills={this.state.skills}
+                            experience={this.state.workExperience}
+                            education={this.state.education}
+                            editor={this.toggleEditor}
+                />
+                <button type='button' className='btn btn-outline-primary' onClick={this.toggleEditor}>Editor</button>
+            </div>
+        );
     }
-
 }
 
 export default Resume;
