@@ -414,10 +414,13 @@ const EditorView = props => {
                 <section>{EducationView}</section>
 
                 <div className='button-group'>
-                    <button type='submit' name='submit' className='btn btn-outline-primary active'>Submit</button>
+                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
                     <button type='submit' name='render' className='btn btn-outline-primary'>Render</button>
                     <button type='reset' className='btn btn-outline-primary'>Cancel</button>
-                    <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
+
+                    <a href='/resume/main'>
+                        <button type='button' className='btn btn-outline-primary'>Editor</button>
+                    </a>
                 </div>
             </form>
         </div>
@@ -429,7 +432,7 @@ export class ResumeEditor extends Component {
         super(props);
         this.state = {
             hasError: false,
-            editorActive: true,
+            editorActive: false,
             header: {}, original_header: {},
             skills: {}, original_skills: {},
             workExperience: {}, original_workExperience: {},
@@ -438,7 +441,6 @@ export class ResumeEditor extends Component {
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
-        this.toggleEditor = this.toggleEditor.bind(this);
     }
 
     async componentDidMount() {
@@ -483,6 +485,7 @@ export class ResumeEditor extends Component {
     }
 
     async handleSubmit(event) {
+
         const education_cols = ['SCHOOL', 'DEGREE', 'DATE_STARTED', 'DATE_ENDED'];
         const experience_cols = ['JOB_TITLE', 'JOB_LOCATION', 'JOB_EMPLOYER', 'JOB_DESCRIPTION', 'DUTIES', 'DATE_STARTED', 'DATE_ENDED'];
         const header_cols = ['TITLE', 'SUBTITLE', 'OBJECTIVE'];
@@ -523,17 +526,22 @@ export class ResumeEditor extends Component {
                 // Render
                 if (event.nativeEvent.submitter.name === 'render' && values.length) {
                     ClearRequest(table_name + '_render')
-                        .then(() => FetchRequest(id, values, cols, table_name + '_render', 'POST', '/api/render'))
+                        .then(() => {
+                            FetchRequest(id, values, cols, table_name + '_render', 'POST', '/api/render');
+                        })
                 }
 
                 // Final
-                if (values.length) {
-                    FetchRequest(id, values, cols, table_name, 'PATCH', '/api');
+                else if (values.length) {
+                    ClearRequest(table_name)
+                        .then(() => {
+                            FetchRequest(id, values, cols, table_name, 'POST', '/api')
+                        })
                 }
             }
         })
 
-        // Request
+        // Patch request
         async function FetchRequest(id, values, cols, table_name, method, path) {
             await fetch(path, {
                 method: method,
@@ -572,11 +580,8 @@ export class ResumeEditor extends Component {
         );
     }
 
-    toggleEditor() {
-        this.setState({editorActive: !this.state.editorActive});
-    }
-
     render() {
+
         if (!this.state.header[0] || this.state.hasError) {
             return (
                 <div>
@@ -585,31 +590,16 @@ export class ResumeEditor extends Component {
             )
         }
 
-        if (this.state.editorActive) {
-            return (
-                <EditorView
-                    header={this.state.header}
-                    skills={this.state.skills}
-                    experience={this.state.workExperience}
-                    education={this.state.education}
-                    submit={this.handleSubmit}
-                    cancle={this.handleCancel}
-                    editor={this.toggleEditor}
-                />
-            )
-        }
-
         return (
-            <div className='resume__container'>
-                <RenderView header={this.state.header}
-                            skills={this.state.skills}
-                            experience={this.state.workExperience}
-                            education={this.state.education}
-                            editor={this.toggleEditor}
-                />
-                <button type='button' className='btn btn-outline-primary' onClick={this.toggleEditor}>Editor</button>
-            </div>
-        );
+            <EditorView
+                header={this.state.header}
+                skills={this.state.skills}
+                experience={this.state.workExperience}
+                education={this.state.education}
+                submit={this.handleSubmit}
+                cancle={this.handleCancel}
+            />
+        )
     }
 }
 
@@ -678,6 +668,80 @@ export class ResumeRender extends Component {
                             education={this.state.education}
                             editor={this.toggleEditor}
                 />
+            </div>
+        );
+    }
+}
+
+export class ResumeMain extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            header: {},
+            skills: {},
+            workExperience: {},
+            education: {}
+        }
+    }
+
+    async componentDidMount() {
+        const responses = {};
+        for (const table of [
+            'resume_header',
+            'resume_skills',
+            'resume_experience',
+            'resume_education'
+        ]) {
+            await this.callBackendApi(table)
+                .then(res => {
+                    responses[table] = res.message
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+
+        this.setState({
+            header: responses['resume_header'],
+            skills: responses['resume_skills'],
+            workExperience: responses['resume_experience'],
+            education: responses['resume_education']
+        });
+    }
+
+    callBackendApi = async (table) => {
+        const response = await fetch(`/api/list_all?table=${table}`);
+        const body = await response.json()
+
+        if (response.status !== 200) {
+            this.setState({hasError: true})  // Bad request
+            throw Error(body.errorMessage);
+        }
+        return body;
+    }
+
+    render() {
+        console.log(this.state)
+        if (!this.state.header[0]) {
+            return (
+                <div>
+                    <p>Something went wrong</p>
+                </div>
+            )
+        }
+
+        return (
+            <div className='resume__container'>
+                <RenderView header={this.state.header}
+                            skills={this.state.skills}
+                            experience={this.state.workExperience}
+                            education={this.state.education}
+                            editor={this.toggleEditor}
+                />
+
+                <a href='/resume/editor'>
+                    <button type='button' className='btn btn-outline-primary'>Editor</button>
+                </a>
             </div>
         );
     }

@@ -22,4 +22,4 @@ export { default as Projects } from './projects/projects';
 /* Resume page
  * This page displays my current skills and work experience
  */
-export { ResumeEditor, ResumeRender } from './resume/resume';
+export { ResumeEditor, ResumeRender, ResumeMain } from './resume/resume';
