@@ -34,11 +34,12 @@ exports.connect = () => {
 };
 
 // Create entry
-exports.newEntry = (table, values) => {
-    const sql = `INSERT INTO ${table} (ID, TITLE, DESCRIPTION, CONTENT, DATE_CREATED, DATE_EDITED) VALUES ?`;
+exports.newEntry = (table, columns, values, id) => {
+    const entries = [id].concat(values.map(value => `'${value}'`));
+    const sql = `INSERT INTO ${table} (ID, ${columns}) VALUES (${entries})`;
 
     return new Promise((resolve, reject) => {
-        database.query(sql, [values], (err, results) => {
+        database.query(sql, (err, results) => {
             if (err) {
                 return reject(err);
             }
@@ -103,6 +104,21 @@ exports.patchById = (table, cols, values, id) => {
 // Delete entry
 exports.removeById = (table, id) => {
     const sql = `DELETE FROM ${table} WHERE ID = ${id}`;
+
+    return new Promise((resolve, reject) => {
+        database.query(sql, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+
+            resolve(results);
+        });
+    });
+};
+
+// Delete all entries in table
+exports.clearTable = (table) => {
+    const sql = `TRUNCATE TABLE ${table}`;
 
     return new Promise((resolve, reject) => {
         database.query(sql, (err, results) => {

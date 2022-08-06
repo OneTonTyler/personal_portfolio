@@ -7,9 +7,11 @@ ContentModel.connect();
 // Insert a new project or blog post
 exports.insert = async (req, res) => {
     const table_name = req.body.table;
+    const columns = req.body.cols;
     const values = req.body.values;
+    const id = req.body.id;
 
-    await ContentModel.newEntry(table_name, [values])
+    await ContentModel.newEntry(table_name, columns, values, id)
         .then(results => {
             res.status(201).send({message: results});
         })
@@ -51,8 +53,6 @@ exports.patchById = async (req, res) => {
     const values = req.body.values;
     const id = req.body.id;
 
-    console.log(req.body);
-
     await ContentModel.patchById(table_name, cols, values, id)
         .then(results => {
             res.status(200).send({message: results});
@@ -73,5 +73,18 @@ exports.removeById = async (req, res) => {
         })
         .catch(err => {
             res.status(400).send({errorMessage: err});
+        });
+};
+
+// Delete all entries in table
+exports.clearTable = async (req, res) => {
+    const table_name = req.body.table;
+
+    await ContentModel.clearTable(table_name)
+        .then(results => {
+            res.status(200).send({message: results});
+        })
+        .catch(err => {
+            res.status(400).send({errorMessage: err})
         });
 };

@@ -414,8 +414,8 @@ const EditorView = props => {
                 <section>{EducationView}</section>
 
                 <div className='button-group'>
-                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
-                    <button type='button' className='btn btn-outline-primary' onClick={props.render}>Render</button>
+                    <button type='submit' name='submit' className='btn btn-outline-primary active'>Submit</button>
+                    <button type='submit' name='render' className='btn btn-outline-primary'>Render</button>
                     <button type='reset' className='btn btn-outline-primary'>Cancel</button>
                     <button type='button' className='btn btn-outline-primary' onClick={props.editor}>Editor</button>
                 </div>
@@ -424,7 +424,7 @@ const EditorView = props => {
     )
 }
 
-class Resume extends Component {
+export class ResumeEditor extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -439,7 +439,6 @@ class Resume extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
         this.toggleEditor = this.toggleEditor.bind(this);
-        this.handleRender = this.handleRender.bind(this);
     }
 
     async componentDidMount() {
@@ -496,6 +495,7 @@ class Resume extends Component {
             resume_skills: skills_cols
         };
 
+        // Cycle through the tables
         Object.keys(tables).forEach(table_name => {
             let cols = [];
             let sections = [];
@@ -520,14 +520,23 @@ class Resume extends Component {
                 }
 
                 // Submit request to SQL server
-                if (values) FetchRequest(id, values, cols, table_name)
+                // Render
+                if (event.nativeEvent.submitter.name === 'render' && values.length) {
+                    ClearRequest(table_name + '_render')
+                        .then(() => FetchRequest(id, values, cols, table_name + '_render', 'POST', '/api/render'))
+                }
+
+                // Final
+                if (values.length) {
+                    FetchRequest(id, values, cols, table_name, 'PATCH', '/api');
+                }
             }
         })
 
-        // Patch request
-        async function FetchRequest(id, values, cols, table_name) {
-            await fetch('/api', {
-                method: 'PATCH',
+        // Request
+        async function FetchRequest(id, values, cols, table_name, method, path) {
+            await fetch(path, {
+                method: method,
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     table: table_name,
@@ -538,80 +547,18 @@ class Resume extends Component {
             })
         }
 
+        // Clear table
+        async function ClearRequest(table_name) {
+            await fetch('/api/render', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    table: table_name
+                })
+            })
+        }
+
         event.preventDefault();
-    }
-
-    handleRender() {
-        const education_cols = ['SCHOOL', 'DEGREE', 'DATE_STARTED', 'DATE_ENDED'];
-        const experience_cols = ['JOB_TITLE', 'JOB_LOCATION', 'JOB_EMPLOYER', 'JOB_DESCRIPTION', 'DUTIES', 'DATE_STARTED', 'DATE_ENDED'];
-        const header_cols = ['TITLE', 'SUBTITLE', 'OBJECTIVE'];
-        const skills_cols = ['LANGUAGES', 'STUDIES', 'ATTRIBUTES'];
-
-        const tables = {
-            resume_education: education_cols,
-            resume_experience: experience_cols,
-            resume_header: header_cols,
-            resume_skills: skills_cols
-        };
-
-        const states = {'education':[], 'experience':[], 'header':[], 'skills':[]};
-
-        // Create a list of states
-        Object.keys(tables).forEach((table_name, idx) => {
-            let cols = [];
-            let sections = [];
-            let newState = [];
-
-            // Get a list of all sections
-            tables[table_name].forEach(col => {
-                let id = `${table_name}__${col.toLowerCase()}`;
-                let value = document.body.querySelectorAll(`[id^=${id}]`);
-
-                // Push to columns and sections
-                cols.push(col);
-                sections.push(value);
-            });
-
-            // const foo = sections.map((element, id) => {
-            //     newState['ID'] = id;
-            //
-            //     for (let colNumber = 0; colNumber < sections.length; colNumber++) {
-            //         if (sections[colNumber][id].value !== '') {
-            //             newState[cols[colNumber]] = sections[colNumber][id].value;
-            //         }
-            //     }
-            //
-            //     return newState;
-            // })
-            //
-            // console.log(foo)
-
-            // for (let id  = 0; id < sections[0].length; id++) {
-            //     newState['ID'] = id;
-            //     // Load column values into columns
-            //     for (let column = 0; column < sections.length; column++) {
-            //         if (sections[column][id].value !== '') {
-            //             newState[cols[column]] = sections[column][id].value;
-            //         }
-            //     }
-            //
-            //     states[Object.keys(states)[idx]].push(id)
-            //     console.log(states[Object.keys(states)[idx]])
-            //     console.log(newState)
-            // }
-
-        });
-
-        // Update state
-        // console.log(states['education'])
-        // console.log(this.state['education'])
-        //
-        // this.setState({
-        //     education: states['education'],
-        //     experience: states['experience'],
-        //     header: states['header'],
-        //     skills: states['skills']
-        // })
     }
 
     handleCancel() {
@@ -648,7 +595,6 @@ class Resume extends Component {
                     submit={this.handleSubmit}
                     cancle={this.handleCancel}
                     editor={this.toggleEditor}
-                    render={this.handleRender}
                 />
             )
         }
@@ -667,4 +613,72 @@ class Resume extends Component {
     }
 }
 
-export default Resume;
+export class ResumeRender extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            header: {},
+            skills: {},
+            workExperience: {},
+            education: {}
+        }
+    }
+
+    async componentDidMount() {
+        const responses = {};
+        for (const table of [
+            'resume_header',
+            'resume_skills',
+            'resume_experience',
+            'resume_education'
+        ]) {
+            await this.callBackendApi(table)
+                .then(res => {
+                    responses[table] = res.message
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+
+        this.setState({
+            header: responses['resume_header'],
+            skills: responses['resume_skills'],
+            workExperience: responses['resume_experience'],
+            education: responses['resume_education']
+        });
+    }
+
+    callBackendApi = async (table) => {
+        const response = await fetch(`/api/list_all?table=${table}_render`);
+        const body = await response.json()
+
+        if (response.status !== 200) {
+            this.setState({hasError: true})  // Bad request
+            throw Error(body.errorMessage);
+        }
+        return body;
+    }
+
+    render() {
+        console.log(this.state)
+        if (!this.state.header[0]) {
+            return (
+                <div>
+                    <p>Something went wrong</p>
+                </div>
+            )
+        }
+
+        return (
+            <div className='resume__container'>
+                <RenderView header={this.state.header}
+                            skills={this.state.skills}
+                            experience={this.state.workExperience}
+                            education={this.state.education}
+                            editor={this.toggleEditor}
+                />
+            </div>
+        );
+    }
+}

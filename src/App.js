@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 
 import { Navbar } from './components/index';
-import { Blog, Home, Projects, Resume } from './containers';
+import { Blog, Home, Projects, ResumeEditor, ResumeRender } from './containers';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 const App = () => {
@@ -14,11 +14,12 @@ const App = () => {
 
             <Router>
                 <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/blog" element={<Blog />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="/projects/edit" element={<Projects />} />
-                    <Route path="/resume" element={<Resume />} />
+                    <Route path="/" element={<Home/>}/>
+                    <Route path="/blog" element={<Blog/>}/>
+                    <Route path="/projects" element={<Projects/>}/>
+                    <Route path="/projects/edit" element={<Projects/>}/>
+                    <Route path="/resume/editor" element={<ResumeEditor/>}/>
+                    <Route path="/resume/render" element={<ResumeRender/>}/>
                 </Routes>
             </Router>
         </div>

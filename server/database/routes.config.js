@@ -14,11 +14,19 @@ exports.routes_config = (app) => {
         ContentController.insert
     ]);
 
+    app.post('/api/render', [
+        ContentController.insert
+    ]);
+
     app.patch('/api', [
         ContentController.patchById
     ]);
 
     app.delete('/api', [
         ContentController.removeById
+    ]);
+
+    app.delete('/api/render', [
+        ContentController.clearTable
     ]);
 };
