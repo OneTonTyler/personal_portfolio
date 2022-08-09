@@ -1,5 +1,5 @@
 import './resume.css';
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
     FaAt,
     FaBolt,
@@ -15,8 +15,8 @@ import {
 } from 'react-icons/fa';
 
 // Necessary imports for doughnut graph
-import {Doughnut} from 'react-chartjs-2';
-import {ArcElement, Chart as ChartJS, Legend} from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
+import { ArcElement, Chart as ChartJS, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 // Required for chart
@@ -325,13 +325,6 @@ const RenderView = props => {
 }
 
 const EditorView = props => {
-    /* Displays the Section Title with Headers and Values
-     *
-     * Params:
-     * DefaultView - Adds empty blocks to its respective block (int)
-     * SectionTitle - The blue title for each block
-     * Block - properties
-     */
     function Display(DefaultView, SectionTitle, Block, BlockTitle) {
         // Make a copy else Block gets changed
         const BlockCopy = Block.map(element => element);
@@ -417,10 +410,11 @@ const EditorView = props => {
                     <button type='submit' className='btn btn-outline-primary active'>Submit</button>
                     <button type='submit' name='render' className='btn btn-outline-primary'>Render</button>
                     <button type='reset' className='btn btn-outline-primary'>Cancel</button>
+                    <button type='button' className='btn btn-outline-primary'>Editor</button>
 
-                    <a href='/resume/main'>
-                        <button type='button' className='btn btn-outline-primary'>Editor</button>
-                    </a>
+                    <div className='button-group__view'>
+                        <button type='button' onClick={() => window.open('/resume/render')} className='btn btn-primary'>View</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -526,16 +520,16 @@ export class ResumeEditor extends Component {
                 // Render
                 if (event.nativeEvent.submitter.name === 'render' && values.length) {
                     ClearRequest(table_name + '_render')
-                        .then(() => {
-                            FetchRequest(id, values, cols, table_name + '_render', 'POST', '/api/render');
+                        .then(async () => {
+                            await FetchRequest(id, values, cols, table_name + '_render', 'POST', '/api/render');
                         })
                 }
 
                 // Final
                 else if (values.length) {
                     ClearRequest(table_name)
-                        .then(() => {
-                            FetchRequest(id, values, cols, table_name, 'POST', '/api')
+                        .then(async () => {
+                            await FetchRequest(id, values, cols, table_name, 'POST', '/api')
                         })
                 }
             }
@@ -721,13 +715,8 @@ export class ResumeMain extends Component {
     }
 
     render() {
-        console.log(this.state)
         if (!this.state.header[0]) {
-            return (
-                <div>
-                    <p>Something went wrong</p>
-                </div>
-            )
+            return
         }
 
         return (
