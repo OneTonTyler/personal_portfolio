@@ -1,57 +1,8 @@
 import './content.css';
 import React, { Component } from 'react';
 
-// TODO: Save in separate file
-// Helper Functions
-
-// Editor
-function DisplaySectionTitle(section_title, id) {
-    if (section_title !== '') return <h4>{section_title} {id}</h4>
-}
-
-// Returns an input field a given key, value pair
-function DisplayInputField(data_entry) {
-    const columns = Object.keys(data_entry)  // Get column names
-
-    return columns.map(column_name => {
-        let value = data_entry[column_name]
-        let label = `${column_name} ${data_entry['ID']}`
-        let rows = 1
-
-        // Increase the row size when the length of text exceeds 90 characters
-        if (value.length > 90) rows = 6
-
-        return (
-            <div className='mb-3' key={label}>
-                <label form={label} className='form-label'>{column_name}</label>
-                <textarea id={label} className='form-control' defaultValue={value} rows={rows}/>
-            </div>
-        )
-    })
-}
-
-// Return a collection of input fields for each section
-function DisplayEntryBlock(input_fields, section_headers) {
-    const input_block = input_fields.map((data_entry, idx) => {
-        // Unique key for div
-        const label = `${section_headers} ${idx}`
-
-        // Check for blank section headers
-        if (section_headers === '') return DisplayInputField(data_entry)
-
-        return (
-            <div key={label}>
-                <h4>{label}</h4>
-                {DisplayInputField(data_entry)}
-            </div>
-        )
-    })
-
-    return input_block
-}
-
-// Render
-
+// Helper function
+import { DisplayEntryBlock, GetColumnNames, GetPageData, FetchRequest, FormatPageData } from './HelperFunction';
 
 // Loading screen for the initial render
 const InitialRender = props => {
@@ -84,6 +35,11 @@ const EditorView = props => {
 // Render View
 
 class StandardComponent extends Component {
+    constructor(props) {
+        super(props);
+
+        this.submitHandler = this.submitHandler.bind(this)
+    }
 
     // Connect to the server
     callBackendApi = table_name => {
@@ -111,6 +67,17 @@ class StandardComponent extends Component {
         Promise.all(data).then(results => this.setState({data: results, initial_loading_screen: false}))
     }
 
+    async submitHandler(event) {
+        const table_headers = this.state.table_headers
+        const table_columns = GetColumnNames(this.state.data)
+        const raw_page_data = GetPageData(event, table_columns)
+
+        await FormatPageData(raw_page_data, table_headers, table_columns, '/api')
+
+        event.preventDefault();
+    }
+
+    // TODO: Add error handling
 
     render() {
         return <InitialRender />
@@ -133,17 +100,32 @@ class Content extends StandardComponent {
             // Errors
             hasError: false,
         }
+
+        this.submitHandler = this.submitHandler.bind(this)
     }
 
     render() {
         if (this.state.initial_loading_screen) return <InitialRender />
 
         return (
-            <EditorView
-                data={this.state.data}
-                section_headers={['', '', 'Job', 'Certification']}
-                section_titles={['Title Block', 'Skills Block', 'Work Experience', 'Education Block']}
-            />
+            <form onSubmit={this.submitHandler}>
+                <EditorView
+                    data={this.state.data}
+                    section_headers={['', '', 'Job', 'Certification']}
+                    section_titles={['Title Block', 'Skills Block', 'Work Experience', 'Education Block']}
+                />
+
+                <div className='button-group'>
+                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
+                    <button type='submit' name='render' className='btn btn-outline-primary'>Render</button>
+                    <button type='reset' className='btn btn-outline-primary'>Cancel</button>
+                    <button type='button' className='btn btn-outline-primary'>Editor</button>
+
+                    <div className='button-group__view'>
+                        <button type='button' onClick={() => window.open('/resume/render')} className='btn btn-primary'>View</button>
+                    </div>
+                </div>
+            </form>
         )
     }
 
