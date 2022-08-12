@@ -3,9 +3,7 @@ import { Content } from '../../components/index'
 
 const Home = () => {
     return (
-        <div>
-            <Content />
-        </div>
+        <Content table_headers={['resume_header', 'resume_skills', 'resume_experience', 'resume_education']} />
     );
 }
 

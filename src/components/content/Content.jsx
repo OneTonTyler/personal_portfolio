@@ -1,11 +1,11 @@
 import './content.css';
 import React, { Component } from 'react';
 
-// Helper function
-import { DisplayEntryBlock, GetColumnNames, GetPageData, FetchRequest, FormatPageData } from './HelperFunction';
+// Helper functions
+import { DisplayEntryBlock, GetColumnNames, GetPageData, SendPageData } from './HelperFunction';
 
 // Loading screen for the initial render
-const InitialRender = props => {
+const InitialRender = () => {
     return (
         <div>
             <h1>Please wait while the page is loading...</h1>
@@ -34,9 +34,20 @@ const EditorView = props => {
 
 // Render View
 
-class StandardComponent extends Component {
+class Content extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            // API request
+            data: null,
+
+            // Check loading state
+            initial_loading_screen: true,
+            hasPageLoaded: null,
+
+            // Errors
+            hasError: false,
+        }
 
         this.submitHandler = this.submitHandler.bind(this)
     }
@@ -57,10 +68,10 @@ class StandardComponent extends Component {
 
     // Check component mounted
     async componentDidMount() {
-        const table_headers = this.state.table_headers
-        const data = table_headers.map((table_name, idx) => {
+        const table_headers = this.props.table_headers
+        const data = table_headers.map(table_name => {
             return this.callBackendApi(table_name)
-                .catch(err => console.log('Table not found'))
+                .catch(err => console.log(err))
         })
 
         // Resolve promises and update state
@@ -68,41 +79,16 @@ class StandardComponent extends Component {
     }
 
     async submitHandler(event) {
-        const table_headers = this.state.table_headers
+        const table_headers = this.props.table_headers
         const table_columns = GetColumnNames(this.state.data)
         const raw_page_data = GetPageData(event, table_columns)
 
-        await FormatPageData(raw_page_data, table_headers, table_columns, '/api')
+        await SendPageData(raw_page_data, table_headers, table_columns, '/api')
 
         event.preventDefault();
     }
 
     // TODO: Add error handling
-
-    render() {
-        return <InitialRender />
-    }
-}
-
-
-class Content extends StandardComponent {
-    constructor(props) {
-        super(props);
-        this.state = {
-            // API request
-            data: null,
-            table_headers: ['resume_header', 'resume_skills', 'resume_experience', 'resume_education'],
-
-            // Check loading state
-            initial_loading_screen: true,
-            hasPageLoaded: null,
-
-            // Errors
-            hasError: false,
-        }
-
-        this.submitHandler = this.submitHandler.bind(this)
-    }
 
     render() {
         if (this.state.initial_loading_screen) return <InitialRender />
@@ -128,7 +114,6 @@ class Content extends StandardComponent {
             </form>
         )
     }
-
 }
 
 export default Content;

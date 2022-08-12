@@ -79,6 +79,30 @@ exports.getById = (table, id) => {
     });
 };
 
+// Update database with put
+exports.putById = (table, cols, values, id) => {
+    return new Promise((resolve, reject) => {
+        this.newEntry(table, cols, values, id)
+            .then(results => {
+                console.log('New entry created successfully!')
+                resolve(results)
+            })
+            .catch(err => {
+                if (err.code !== 'ER_DUP_ENTRY') reject(err);
+            })
+
+        this.patchById(table, cols, values, id)
+            .then(results => {
+                console.log('PATCH request successful')
+                resolve(results);
+            })
+            .catch(err => {
+                console.log(`Request failed. \n${err.code}`)
+                reject(err);
+            })
+    })
+};
+
 // Update database
 exports.patchById = (table, cols, values, id) => {
     const idx = cols.length;
@@ -90,9 +114,6 @@ exports.patchById = (table, cols, values, id) => {
 
     return new Promise((resolve, reject) => {
         const sql = `UPDATE ${table} SET ${entries.join(', ')} WHERE ID = ${id}`;
-        console.log(sql)
-        console.log()
-
         database.query(sql, (err, results) => {
             if (err) {
                 return reject(err);

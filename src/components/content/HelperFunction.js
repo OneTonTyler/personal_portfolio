@@ -62,7 +62,7 @@ export function GetPageData(event, table_columns) {
 }
 
 // Send page data to server
-export async function FormatPageData(raw_page_data, table_headers, table_columns, path) {
+export async function SendPageData(raw_page_data, table_headers, table_columns, path) {
     raw_page_data.map(async (section, idx) => {
 
         // Get the values for each entry within each section
@@ -76,13 +76,13 @@ export async function FormatPageData(raw_page_data, table_headers, table_columns
             let table_name = table_headers[idx]
             let cols = table_columns[idx]
 
-            await FetchRequest(id, values, cols, table_name, 'PATCH', path)
+            await FetchRequest(id, values, cols, table_name, 'PUT', path)
         }
     })
 }
 
 // Send an api request using fetch
-export async function FetchRequest(id, values, cols, table_name, method, path) {
+async function FetchRequest(id, values, cols, table_name, method, path) {
     await fetch(path, {
         method: method,
         headers: {'Content-Type': 'application/json'},

@@ -46,6 +46,22 @@ exports.getById = async (req, res) => {
         });
 };
 
+// Update entry with put
+exports.putById = async (req, res) => {
+    const table_name = req.body.table;
+    const cols = req.body.cols;
+    const values = req.body.values;
+    const id = req.body.id;
+
+    await ContentModel.putById(table_name, cols, values, id)
+        .then(results => {
+            res.status(200).send({message: results});
+        })
+        .catch(err => {
+            res.status(400).send({errorMessage: err});
+        });
+}
+
 // Update selected entry
 exports.patchById = async (req, res) => {
     const table_name = req.body.table;

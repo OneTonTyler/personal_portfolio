@@ -14,6 +14,10 @@ exports.routes_config = (app) => {
         ContentController.insert
     ]);
 
+    app.put('/api', [
+        ContentController.putById
+    ]);
+
     app.post('/api/render', [
         ContentController.insert
     ]);
