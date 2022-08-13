@@ -1,5 +1,5 @@
 import './content.css';
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 
 // Helper functions
 import { DisplayEntryBlock, GetColumnNames, GetPageData, SendPageData } from './HelperFunction';
@@ -34,26 +34,16 @@ const EditorView = props => {
 
 // Render View
 
-class Content extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            // API request
-            data: null,
+// Transferring from class components into functional components
+function Content(props) {
 
-            // Check loading state
-            initial_loading_screen: true,
-            hasPageLoaded: null,
+    // Initializing state variables
+    const [initial_loading_screen, set_initial_loading_screen] = useState(true)
+    const [data, set_data] = useState([])
+    const [table_headers] = useState(props.table_headers)
 
-            // Errors
-            hasError: false,
-        }
-
-        this.submitHandler = this.submitHandler.bind(this)
-    }
-
-    // Connect to the server
-    callBackendApi = table_name => {
+    // API request
+    function callBackendApi(table_name) {
         return new Promise(async (resolve, reject) => {
             const response = await fetch(`./api/list_all?table=${table_name}`)
             const body = await response.json()
@@ -66,21 +56,9 @@ class Content extends Component {
         })
     }
 
-    // Check component mounted
-    async componentDidMount() {
-        const table_headers = this.props.table_headers
-        const data = table_headers.map(table_name => {
-            return this.callBackendApi(table_name)
-                .catch(err => console.log(err))
-        })
-
-        // Resolve promises and update state
-        Promise.all(data).then(results => this.setState({data: results, initial_loading_screen: false}))
-    }
-
-    async submitHandler(event) {
-        const table_headers = this.props.table_headers
-        const table_columns = GetColumnNames(this.state.data)
+    // Form submission
+    async function submitHandler(event) {
+        const table_columns = GetColumnNames(data)
         const raw_page_data = GetPageData(event, table_columns)
 
         await SendPageData(raw_page_data, table_headers, table_columns, '/api')
@@ -88,32 +66,44 @@ class Content extends Component {
         event.preventDefault();
     }
 
-    // TODO: Add error handling
+    // Fetch data from api
+    useEffect(() => {
+        const response = table_headers.map(table_name => {
+            return callBackendApi(table_name)
+                .catch(err => console.log(err))
+        })
 
-    render() {
-        if (this.state.initial_loading_screen) return <InitialRender />
+        // Resolve promises and update state
+        Promise.all(response).then(results => {
+            set_data(results)
+            set_initial_loading_screen(false)
+        })
+    }, [table_headers])
 
-        return (
-            <form onSubmit={this.submitHandler}>
-                <EditorView
-                    data={this.state.data}
-                    section_headers={['', '', 'Job', 'Certification']}
-                    section_titles={['Title Block', 'Skills Block', 'Work Experience', 'Education Block']}
-                />
+    // Display while fetching data from api
+    if (initial_loading_screen) return <InitialRender />
 
-                <div className='button-group'>
-                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
-                    <button type='submit' name='render' className='btn btn-outline-primary'>Render</button>
-                    <button type='reset' className='btn btn-outline-primary'>Cancel</button>
-                    <button type='button' className='btn btn-outline-primary'>Editor</button>
+    // Form
+    return (
+        <form onSubmit={submitHandler}>
+            <EditorView
+                data={data}
+                section_headers={['', '', 'Job', 'Certification']}
+                section_titles={['Title Block', 'Skills Block', 'Work Experience', 'Education Block']}
+            />
 
-                    <div className='button-group__view'>
-                        <button type='button' onClick={() => window.open('/resume/render')} className='btn btn-primary'>View</button>
-                    </div>
+            <div className='button-group'>
+                <button type='submit' className='btn btn-outline-primary active'>Submit</button>
+                <button type='submit' name='render' className='btn btn-outline-primary'>Render</button>
+                <button type='reset' className='btn btn-outline-primary'>Cancel</button>
+                <button type='button' className='btn btn-outline-primary'>Editor</button>
+
+                <div className='button-group__view'>
+                    <button type='button' onClick={() => window.open('/resume/render')} className='btn btn-primary'>View</button>
                 </div>
-            </form>
-        )
-    }
+            </div>
+        </form>
+    )
 }
 
 export default Content;
