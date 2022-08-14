@@ -33,14 +33,126 @@ const EditorView = props => {
 }
 
 // Render View
+function Editor(props) {
+    return (
+        <div className={props.className}>
+            <label form={props.form_id} className='form-label'/>
+            <input id={props.form_id} className='form-control' defaultValue={props.content}/>
+        </div>
+    )
+}
 
-// Transferring from class components into functional components
-function Content(props) {
+function TitleBlock(props) {
+    const [editor, set_editor] = useState(false)
 
+    const [title] = useState(props.header['TITLE'])
+    const [subtitle] = useState(props.header['SUBTITLE'])
+    const [objective] = useState(props.header['OBJECTIVE'])
+
+    function ToggleEditor() {
+        set_editor(!editor)
+    }
+
+    // Editor View
+    if (editor) {
+        return (
+            <div onDoubleClick={ToggleEditor}>
+                <Editor content={title} form_id='title' className='title'/>
+                <Editor content={subtitle} form_id='subtitle' className='subtitle'/>
+                <Editor content={objective} form_id='objective' className='objective'/>
+            </div>
+        )
+    }
+
+    // Normal View
+    return (
+        <div onDoubleClick={ToggleEditor}>
+            <h1>{title}</h1>
+            <h2>{subtitle}</h2>
+            <p>{objective}</p>
+        </div>
+    )
+}
+
+function ExperienceBlock(props) {
+    const [editor, set_editor] = useState(false)
+
+    const [job_title] = useState(props.experience['JOB_TITLE'])
+    const [job_description] = useState(props.experience['JOB_DESCRIPTION'])
+    const [job_location] = useState(props.experience['JOB_LOCATION'])
+    const [job_employer] = useState(props.experience['JOB_EMPLOYER'])
+    const [duties] = useState(props.experience['DUTIES'])
+    const [date_started] = useState(props.experience['DATE_STARTED'])
+    const [date_ended] = useState(props.experience['DATE_ENDED'])
+
+    function ToggleEditor() {
+        set_editor(!editor)
+    }
+
+    if (editor) {
+        return (
+            <div onDoubleClick={ToggleEditor}>
+                <Editor content={job_title} form_id='job_title' className='job_title'/>
+                <Editor content={job_description} form_id='job_subtitle' className='job_description'/>
+                <Editor content={job_location} form_id='job_location' className='job_location'/>
+                <Editor content={job_employer} form_id='job_employer' className='job_employer'/>
+                <Editor content={duties} form_id='duties' className='duties'/>
+                <Editor content={date_started} form_id='date_started' className='date_started'/>
+                <Editor content={date_ended} form_id='date_ended' className='date_ended'/>
+            </div>
+        )
+    }
+
+    return (
+        <div onDoubleClick={ToggleEditor}>
+            <h3>{job_title}</h3>
+            <h4>{job_employer}</h4>
+            <p>{date_started} - {date_ended}</p>
+            <p>{job_location}</p>
+            <p>{job_description}</p>
+            <p>{duties}</p>
+        </div>
+    )
+
+}
+
+function EducationBlock(props) {
+    const [editor, set_editor] = useState(false)
+
+    const [school] = useState(props.education['SCHOOL'])
+    const [degree] = useState(props.education['DEGREE'])
+    const [date_started] = useState(props.education['DATE_STARTED'])
+    const [date_ended] = useState(props.education['DATE_ENDED'])
+
+    function ToggleEditor() {
+        set_editor(!editor)
+    }
+
+    if (editor) {
+        return (
+            <div onDoubleClick={ToggleEditor}>
+                <Editor content={degree} from_id='degree' className='degree'/>
+                <Editor content={school} from_id='school' className='school'/>
+                <Editor content={date_started} from_id='date_started' className='date_started'/>
+                <Editor content={date_ended} from_id='date_ended' className='date_ended'/>
+            </div>
+        )
+    }
+
+    return (
+        <div onDoubleClick={ToggleEditor}>
+            <h3>{degree}</h3>
+            <h4>{school}</h4>
+            <p>{date_started} - {date_ended}</p>
+        </div>
+    )
+}
+
+function FormEditor() {
     // Initializing state variables
+    const [table_headers] = useState(['resume_header', 'resume_skills', 'resume_experience', 'resume_education'])
     const [initial_loading_screen, set_initial_loading_screen] = useState(true)
     const [data, set_data] = useState([])
-    const [table_headers] = useState(props.table_headers)
 
     // API request
     function callBackendApi(table_name) {
@@ -74,10 +186,16 @@ function Content(props) {
         })
 
         // Resolve promises and update state
-        Promise.all(response).then(results => {
+        Promise.all(response).then(values => {
+            // Create a key value pair
+            let results = {}
+            table_headers.forEach((header, idx) => results[header] = values[idx])
+
+            // Update state
             set_data(results)
             set_initial_loading_screen(false)
         })
+
     }, [table_headers])
 
     // Display while fetching data from api
@@ -85,25 +203,22 @@ function Content(props) {
 
     // Form
     return (
-        <form onSubmit={submitHandler}>
-            <EditorView
-                data={data}
-                section_headers={['', '', 'Job', 'Certification']}
-                section_titles={['Title Block', 'Skills Block', 'Work Experience', 'Education Block']}
-            />
+        <form>
+            <TitleBlock header={data['resume_header'][0]}/>
 
-            <div className='button-group'>
-                <button type='submit' className='btn btn-outline-primary active'>Submit</button>
-                <button type='submit' name='render' className='btn btn-outline-primary'>Render</button>
-                <button type='reset' className='btn btn-outline-primary'>Cancel</button>
-                <button type='button' className='btn btn-outline-primary'>Editor</button>
+            <h2>Experience</h2>
+            <ExperienceBlock experience={data['resume_experience'][0]}/>
+            <ExperienceBlock experience={data['resume_experience'][1]}/>
+            <ExperienceBlock experience={data['resume_experience'][2]}/>
 
-                <div className='button-group__view'>
-                    <button type='button' onClick={() => window.open('/resume/render')} className='btn btn-primary'>View</button>
-                </div>
-            </div>
+            <h2>Education</h2>
+            <EducationBlock education={data['resume_education'][0]}/>
+
+            <h2>Certifications</h2>
+            <EducationBlock education={data['resume_education'][1]}/>
+            <EducationBlock education={data['resume_education'][2]}/>
         </form>
     )
 }
 
-export default Content;
+export default FormEditor;

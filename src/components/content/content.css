@@ -1,199 +1,20 @@
-/* Body */
-h1 {
+/* Title Block */
+.title input {
     font-size: 32px;
     font-weight: bold;
 }
 
-h2 {
+.subtitle input {
     font-size: 24px;
     font-weight: bold;
 }
 
-h3 {
+/* Experience Block */
+.job_title input {
     font-size: 24px;
-}
-
-h4 {
-    font-size: 18px;
-    color: steelblue;
     font-weight: bold;
 }
 
-.resume__container {
-    padding: 2rem;
-}
-
-.resume__container h2 {
-    border-bottom: 2px solid black;
-}
-
-/* Header */
-.resume__header {
-    display: flex;
-    flex-direction: column;
-}
-
-.resume__header > p:first-child {
-    font-size: 24px;
-}
-
-.resume__header-contact {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: 2rem;
-}
-
-.resume__header-contact p {
-    display: inline-block;
-    white-space: nowrap;
-    padding-left: 0.5rem;
-}
-
-/* Container body */
-.resume__container-body {
-    display: grid;
-    grid-template-columns: minmax(600px, 2fr) minmax(300px, 1fr);
-
-    column-gap: 2rem;
-}
-
-.resume__container-body > div > div > div:not(:last-child) {
-    /* Selects only divs that are direct descendants of class resume__container-body
-     * Then, within these divs, selects the next direct set of descendants
-     * Finally, we select the third set of direct descendants expect the ones at the end. Wow...
-     */
-    border-bottom: 1px dashed lightgray;
-    margin-bottom: 1rem;
-}
-
-/* Work Experience */
-.resume__experience-container {
-
-}
-
-.resume__experience {
-    display: grid;
-    grid-template-rows: repeat(3, auto);
-}
-
-.resume__experience-header {
-    display: flex;
-    flex-direction: column;
-}
-
-.resume__experience-dates {
-    display: flex;
-    column-gap: 2rem;
-}
-
-.resume__experience-description {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Education */
-.resume__education {
-
-}
-
-/* Skills and Qualifications */
-.resume__skills {
-}
-
-.resume__skills-body {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    column-gap: 1rem;
-}
-
-.resume__skills-body > h3:first-child {
-    color: steelblue;
-}
-
-/* My Time */
-.resume__time {
-    display: flex;
-    flex-direction: column;
-    row-gap: 1rem;
-}
-
-.resume__time div {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    column-gap: 1rem;
-}
-
-.resume__time p:nth-child(odd) {
-    display: inline-block;
-    width: 20px;
-    height: 25px;
-    border-radius: 3px;
-
-    text-align: center;
-    margin-bottom: auto;
-
-    background: #404040;
-    color: white;
-}
-
-.resume__container p:nth-child(even) {
-    display: inline-block;
-}
-
-/* Passions */
-.resume__passions {
-
-}
-
-.resume__passions-body {
-    display: flex;
-    column-gap: 1rem;
-
-    margin-bottom: 1rem;
-}
-
-.resume__passions-body p {
-    margin-top: auto;
-    margin-bottom: auto;
-}
-
-.resume__passions-body h3 {
-    color: steelblue;
-}
-
-/* Sections */
-section h2:after {
-    border-top: 3px solid black;
-    content: "";
-    display: block;
-    width: 100%;
-}
-
-ul {
-    padding-left: 1rem;
-}
-
-/* Editor */
-.resume__editor-section {
-    margin-bottom: 2rem;
-    padding: 1rem;
-    border-radius: 10px;
-    border: 2px solid lightgray;
-}
-
-/* Buttons */
-.button-group {
-    display: flex;
-    gap: 1rem;
-
-    margin-bottom: 1rem;
-}
-
-.button-group .btn:focus {
-    background: white;
-    color: #0d6efd;
-}
-
-.button-group__view {
-    margin-left: auto;
+.job_employer {
+    font-size: 24px
 }

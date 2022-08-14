@@ -1,9 +1,9 @@
-import React from 'react';
-import { Content } from '../../components/index'
+import React, { useState, useEffect } from 'react';
+import { FormEditor } from '../../components/index'
 
 const Home = () => {
     return (
-        <Content table_headers={['resume_header', 'resume_skills', 'resume_experience', 'resume_education']} />
+        <FormEditor />
     );
 }
 
