@@ -1,10 +1,10 @@
 /* Title Block */
-.title input {
+.title textarea {
     font-size: 32px;
     font-weight: bold;
 }
 
-.subtitle input {
+.subtitle textarea {
     font-size: 24px;
     font-weight: bold;
 }

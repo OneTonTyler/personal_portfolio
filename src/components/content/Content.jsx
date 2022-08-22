@@ -37,7 +37,7 @@ function Editor(props) {
     return (
         <div className={props.className}>
             <label form={props.form_id} className='form-label'/>
-            <input id={props.form_id} className='form-control' defaultValue={props.content}/>
+            <textarea id={props.form_id} className='form-control' defaultValue={props.content} rows={props.rows}/>
         </div>
     )
 }
@@ -57,9 +57,9 @@ function TitleBlock(props) {
     if (editor) {
         return (
             <div onDoubleClick={ToggleEditor}>
-                <Editor content={title} form_id='title' className='title'/>
-                <Editor content={subtitle} form_id='subtitle' className='subtitle'/>
-                <Editor content={objective} form_id='objective' className='objective'/>
+                <Editor content={title} form_id='title' className='title' rows={1}/>
+                <Editor content={subtitle} form_id='subtitle' className='subtitle' rows={1}/>
+                <Editor content={objective} form_id='objective' className='objective' rows={6}/>
             </div>
         )
     }
@@ -75,8 +75,6 @@ function TitleBlock(props) {
 }
 
 function ExperienceBlock(props) {
-    const [editor, set_editor] = useState(false)
-
     const [job_title] = useState(props.experience['JOB_TITLE'])
     const [job_description] = useState(props.experience['JOB_DESCRIPTION'])
     const [job_location] = useState(props.experience['JOB_LOCATION'])
@@ -85,6 +83,8 @@ function ExperienceBlock(props) {
     const [date_started] = useState(props.experience['DATE_STARTED'])
     const [date_ended] = useState(props.experience['DATE_ENDED'])
 
+    const [editor, set_editor] = useState(false)
+
     function ToggleEditor() {
         set_editor(!editor)
     }
@@ -92,13 +92,13 @@ function ExperienceBlock(props) {
     if (editor) {
         return (
             <div onDoubleClick={ToggleEditor}>
-                <Editor content={job_title} form_id='job_title' className='job_title'/>
-                <Editor content={job_description} form_id='job_subtitle' className='job_description'/>
-                <Editor content={job_location} form_id='job_location' className='job_location'/>
-                <Editor content={job_employer} form_id='job_employer' className='job_employer'/>
-                <Editor content={duties} form_id='duties' className='duties'/>
-                <Editor content={date_started} form_id='date_started' className='date_started'/>
-                <Editor content={date_ended} form_id='date_ended' className='date_ended'/>
+                <Editor content={job_title} form_id='job_title' className='job_title' rows={1}/>
+                <Editor content={job_description} form_id='job_subtitle' className='job_description' rows={6}/>
+                <Editor content={job_location} form_id='job_location' className='job_location' rows={1}/>
+                <Editor content={job_employer} form_id='job_employer' className='job_employer' rows={1}/>
+                <Editor content={duties} form_id='duties' className='duties' rows={6}/>
+                <Editor content={date_started} form_id='date_started' className='date_started' rows={1}/>
+                <Editor content={date_ended} form_id='date_ended' className='date_ended' rows={1}/>
             </div>
         )
     }
