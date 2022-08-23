@@ -1,3 +1,36 @@
+/* Main Component */
+.form_container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: repeat(2, auto);
+
+    column-gap: 2rem;
+
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.left_column {
+    grid-column: 1;
+}
+
+.right_column {
+    grid-column: 2;
+}
+
+.section_wrapper > h2 {
+    border-bottom: 2px solid black;
+}
+
+.section_wrapper > div:not(:last-child) {
+    border-bottom: 1px dashed gray;
+    margin-bottom: 1rem;
+}
+
+.title_wrapper {
+    grid-column: 1 / -1;
+}
+
 /* Title Block */
 .title textarea {
     font-size: 32px;

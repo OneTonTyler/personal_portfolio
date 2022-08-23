@@ -203,21 +203,54 @@ function FormEditor() {
 
     // Form
     return (
-        <form>
-            <TitleBlock header={data['resume_header'][0]}/>
+        <div>
+            <form className='form_container'>
+                <div className='title_wrapper'>
+                    <TitleBlock header={data['resume_header'][0]}/>
+                </div>
 
-            <h2>Experience</h2>
-            <ExperienceBlock experience={data['resume_experience'][0]}/>
-            <ExperienceBlock experience={data['resume_experience'][1]}/>
-            <ExperienceBlock experience={data['resume_experience'][2]}/>
+                <div className='left_column' >
+                    {/* Experience */}
+                    <div className='section_wrapper'>
+                        <h2>Experience</h2>
+                        <ExperienceBlock experience={data['resume_experience'][0]}/>
+                        <ExperienceBlock experience={data['resume_experience'][1]}/>
+                        <ExperienceBlock experience={data['resume_experience'][2]}/>
+                    </div>
 
-            <h2>Education</h2>
-            <EducationBlock education={data['resume_education'][0]}/>
+                    {/* Education */}
+                    <div className='section_wrapper'>
+                        <h2>Education</h2>
+                        <EducationBlock education={data['resume_education'][0]}/>
+                    </div>
 
-            <h2>Certifications</h2>
-            <EducationBlock education={data['resume_education'][1]}/>
-            <EducationBlock education={data['resume_education'][2]}/>
-        </form>
+                    {/* Certifications */}
+                    <div className='section_wrapper'>
+                        <h2>Certifications</h2>
+                        <EducationBlock education={data['resume_education'][1]}/>
+                        <EducationBlock education={data['resume_education'][2]}/>
+                    </div>
+                </div>
+
+                <div className='right_column'>
+                    <div className='section_wrapper'>
+                        <h2>Achievements</h2>
+                    </div>
+
+                    <div className='section_wrapper'>
+                        <h2>My Time</h2>
+                    </div>
+
+                    <div className='section_wrapper'>
+                        <h2>Passions</h2>
+                    </div>
+
+                    <div className='section_wrapper'>
+                        <h2>Contact Me</h2>
+                    </div>
+                </div>
+            </form>
+        </div>
     )
 }
 
