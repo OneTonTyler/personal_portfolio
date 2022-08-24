@@ -158,10 +158,12 @@ function ContactMe() {
 
 // Components
 function Editor(props) {
+    const id = `${props.form_id}`
+
     return (
         <div className={props.className}>
-            <label form={props.form_id} className='form-label'/>
-            <textarea id={props.form_id} className='form-control' defaultValue={props.content} rows={props.rows}/>
+            <label form={id} className='form-label'/>
+            <textarea id={id} className='form-control' defaultValue={props.content} rows={props.rows}/>
         </div>
     )
 }
@@ -180,9 +182,9 @@ function TitleBlock(props) {
     if (editor) {
         return (
             <div onDoubleClick={ToggleEditor}>
-                <Editor content={title} form_id='title' className='title' rows={1}/>
-                <Editor content={subtitle} form_id='subtitle' className='subtitle' rows={1}/>
-                <Editor content={objective} form_id='objective' className='objective' rows={6}/>
+                <Editor content={title} form_id='TITLE' className='title' rows={1}/>
+                <Editor content={subtitle} form_id='SUBTITLE' className='subtitle' rows={1}/>
+                <Editor content={objective} form_id='OBJECTIVE' className='objective' rows={6}/>
             </div>
         )
     }
@@ -291,7 +293,11 @@ function Form(props) {
     const [data, set_data] = useState(props.data)
     const [editor, set_editor] = useState(false)
 
-    function ToggleEditor() {
+    function ToggleEditor(event) {
+        if(!editor) {
+            // Make this a button
+        }
+
         set_editor(!editor)
     }
 
@@ -306,8 +312,8 @@ function Form(props) {
     }
 
     return (
-        <div onDoubleClick={ToggleEditor}>
-            <form className='form_container'>
+        <div>
+            <form className='form_container' onDoubleClick={ToggleEditor}>
                 <div className='title_wrapper'>
                     <TitleBlock header={data['resume_header'][0]}/>
                 </div>
@@ -335,7 +341,7 @@ function Form(props) {
                 <div className='right_column'>
                     <div className='section_wrapper'>
                         <h2>Achievements</h2>
-                        <SkillsAndAttributes achievements={data['resume_skills']} editor={editor}/>
+                        <SkillsAndAttributes achievements={data['resume_skills']} editor={editor} label='resume_skills'/>
                     </div>
 
                     <div className='section_wrapper'>
