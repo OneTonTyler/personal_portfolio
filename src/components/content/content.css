@@ -51,3 +51,11 @@
 .job_employer {
     font-size: 24px
 }
+
+/* Achievements Block */
+.achievements_wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+
+    grid-column-gap: 1rem;
+}
