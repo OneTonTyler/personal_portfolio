@@ -168,35 +168,31 @@ function Editor(props) {
     )
 }
 function TitleBlock(props) {
-    const [editor, set_editor] = useState(false)
-
-    const [title] = useState(props.header['TITLE'])
-    const [subtitle] = useState(props.header['SUBTITLE'])
-    const [objective] = useState(props.header['OBJECTIVE'])
-
-    function ToggleEditor() {
-        set_editor(!editor)
-    }
+    const [header, set_header] = useState(props.header)
 
     // Editor View
-    if (editor) {
+    const display_editor = header.map((subsection, idx) => {
         return (
-            <div onDoubleClick={ToggleEditor}>
-                <Editor content={title} form_id='TITLE' className='title' rows={1}/>
-                <Editor content={subtitle} form_id='SUBTITLE' className='subtitle' rows={1}/>
-                <Editor content={objective} form_id='OBJECTIVE' className='objective' rows={6}/>
+            <div key={`Header_${idx}`}>
+                <Editor content={subsection['TITLE']} form_id='TITLE' className='title' rows={1}/>
+                <Editor content={subsection['SUBTITLE']} form_id='SUBTITLE' className='subtitle' rows={1}/>
+                <Editor content={subsection['OBJECTIVE']} form_id='OBJECTIVE' className='objective' rows={6}/>
             </div>
         )
-    }
+    })
 
     // Normal View
-    return (
-        <div onDoubleClick={ToggleEditor}>
-            <h1>{title}</h1>
-            <h2>{subtitle}</h2>
-            <p>{objective}</p>
-        </div>
-    )
+    const display_render = header.map((subsection, idx) => {
+        return (
+            <div key={`Header_${idx}`}>
+                <h1>{subsection['TITLE']}</h1>
+                <h2>{subsection['SUBTITLE']}</h2>
+                <p>{subsection['OBJECTIVE']}</p>
+            </div>
+        )
+    })
+
+    return (props.editor) ? display_editor : display_render
 }
 function ExperienceBlock(props) {
     const [experience, set_experience] = useState(props.experience)
@@ -204,13 +200,13 @@ function ExperienceBlock(props) {
     const display_editor = experience.map((subsection, idx) => {
         return (
             <div key={`Experience_${idx}`}>
-                <Editor content={subsection['JOB_TITLE']} form_id='job_title' className='job_title' rows={1}/>
-                <Editor content={subsection['JOB_DESCRIPTION']} form_id='job_subtitle' className='job_description' rows={6}/>
-                <Editor content={subsection['JOB_LOCATION']} form_id='job_location' className='job_location' rows={1}/>
-                <Editor content={subsection['JOB_EMPLOYER']} form_id='job_employer' className='job_employer' rows={1}/>
-                <Editor content={subsection['DUTIES']} form_id='duties' className='duties' rows={6}/>
-                <Editor content={subsection['DATE_STARTED']} form_id='date_started' className='date_started' rows={1}/>
-                <Editor content={subsection['DATE_ENDED']} form_id='date_ended' className='date_ended' rows={1}/>
+                <Editor content={subsection['JOB_TITLE']} form_id='JOB_TITLE' className='job_title' rows={1}/>
+                <Editor content={subsection['JOB_DESCRIPTION']} form_id='JOB_DESCRIPTION' className='job_description' rows={6}/>
+                <Editor content={subsection['JOB_LOCATION']} form_id='JOB_LOCATION' className='job_location' rows={1}/>
+                <Editor content={subsection['JOB_EMPLOYER']} form_id='JOB_EMPLOYER' className='job_employer' rows={1}/>
+                <Editor content={subsection['DUTIES']} form_id='DUTIES' className='duties' rows={6}/>
+                <Editor content={subsection['DATE_STARTED']} form_id='DATE_STARTED' className='date_started' rows={1}/>
+                <Editor content={subsection['DATE_ENDED']} form_id='DATE_ENDED' className='date_ended' rows={1}/>
             </div>
         )
     })
@@ -237,10 +233,10 @@ function EducationBlock(props) {
     const display_editor = education.map((subsection, idx) => {
         return (
             <div key={`Education_${idx}`}>
-                <Editor content={subsection['DEGREE']} form_id='degree' className='degree'/>
-                <Editor content={subsection['SCHOOL']} form_id='school' className='school'/>
-                <Editor content={subsection['DATE_STARTED']} form_id='date_started' className='date_started'/>
-                <Editor content={subsection['DATE_ENDED']} form_id='date_ended' className='date_ended'/>
+                <Editor content={subsection['DEGREE']} form_id='DEGREE' className='degree'/>
+                <Editor content={subsection['SCHOOL']} form_id='SCHOOL' className='school'/>
+                <Editor content={subsection['DATE_STARTED']} form_id='DATE_STARTED' className='date_started'/>
+                <Editor content={subsection['DATE_ENDED']} form_id='DATE_ENDED' className='date_ended'/>
             </div>
         )
     })
@@ -266,8 +262,8 @@ function SkillsAndAttributes(props) {
     const display_editor = achievements.map((subsection, idx) => {
         return (
             <div key={`SkillsAndAttributes_${idx}`}>
-                <Editor content={subsection['TITLE']} form_id='achievement_title' className='title' rows={1}/>
-                <Editor content={subsection['CONTENT']} form_id='achievement_content' rows={3}/>
+                <Editor content={subsection['TITLE']} form_id='TITLE' className='title' rows={1}/>
+                <Editor content={subsection['CONTENT']} form_id='CONTENT' rows={3}/>
             </div>
         )
     })
@@ -294,8 +290,32 @@ function Form(props) {
     const [editor, set_editor] = useState(false)
 
     function ToggleEditor(event) {
-        if(!editor) {
-            // Make this a button
+        if(editor) {
+            let page_data = data
+
+            // Get the column names from each table
+            const column_names = table_headers.map(header => {
+                return Object.keys(data[header][0]).slice(1)
+            })
+
+            // Get all values associated with its respective div
+            column_names.map((subsection, idx) => {
+                const subsection_data = subsection.map(header => {
+                    const form = event.target.form
+                    const container = form.querySelector(`[id^=${table_headers[idx]}]`)
+
+                    return Array.from(container.querySelectorAll(`[id^=${header}]`), ({ value }) => value)
+                })
+
+                // Update values
+                subsection_data.map((values, index) => {
+                    for (let i = 0; i < values.length; i++) {
+                        page_data[`${table_headers[idx]}`][i][`${subsection[index]}`] = values[i]
+                    }
+                })
+            })
+
+            set_data(page_data)
         }
 
         set_editor(!editor)
@@ -307,39 +327,38 @@ function Form(props) {
         const raw_page_data = GetPageData(event, table_columns)
 
         await SendPageData(raw_page_data, table_headers, table_columns, '/api')
-
         event.preventDefault();
     }
 
     return (
         <div>
             <form className='form_container' onDoubleClick={ToggleEditor}>
-                <div className='title_wrapper'>
-                    <TitleBlock header={data['resume_header'][0]}/>
+                <div className='title_wrapper' id='resume_header'>
+                    <TitleBlock header={data['resume_header']} editor={editor}/>
                 </div>
 
                 <div className='left_column' >
                     {/* Experience */}
-                    <div className='section_wrapper'>
+                    <div className='section_wrapper' id='resume_experience'>
                         <h2>Experience</h2>
                         <ExperienceBlock experience={data['resume_experience']} editor={editor}/>
                     </div>
 
                     {/* Education */}
-                    <div className='section_wrapper'>
+                    <div className='section_wrapper' id='resume_education'>
                         <h2>Education</h2>
                         <EducationBlock education={data['resume_education'].slice(0, 1)} editor={editor}/>
                     </div>
 
                     {/* Certifications */}
-                    <div className='section_wrapper'>
+                    <div className='section_wrapper' id='resume_education_certifications'>
                         <h2>Certifications</h2>
                         <EducationBlock education={data['resume_education'].slice(1)} editor={editor}/>
                     </div>
                 </div>
 
                 <div className='right_column'>
-                    <div className='section_wrapper'>
+                    <div className='section_wrapper' id='resume_skills'>
                         <h2>Achievements</h2>
                         <SkillsAndAttributes achievements={data['resume_skills']} editor={editor} label='resume_skills'/>
                     </div>
