@@ -208,7 +208,7 @@ function Editor(props) {
     )
 }
 function TitleBlock(props) {
-    const [header] = useState(props.header)
+    const header = props.header
 
     // Editor View
     const display_editor = header.map((subsection, idx) => {
@@ -235,7 +235,7 @@ function TitleBlock(props) {
     return (props.editor) ? display_editor : display_render
 }
 function ExperienceBlock(props) {
-    const [experience] = useState(props.experience)
+    const experience = props.experience
 
     const display_editor = experience.map((subsection, idx) => {
         return (
@@ -268,7 +268,7 @@ function ExperienceBlock(props) {
 
 }
 function EducationBlock(props) {
-    const [education] = useState(props.education)
+    const education = props.education
 
     const display_editor = education.map((subsection, idx) => {
         return (
@@ -294,7 +294,7 @@ function EducationBlock(props) {
     return (props.editor) ? display_editor : display_render
 }
 function SkillsAndAttributes(props) {
-    const [achievements] = useState(props.achievements)
+    const achievements = props.achievements
     const icon_list = [
         <FaCode/>, <FaBolt/>, <FaGalacticRepublic/>
     ]
@@ -325,11 +325,9 @@ function SkillsAndAttributes(props) {
 
 // Display Components
 function Form(props) {
-    const [hasChanges, set_hasChanges] = useState(false)
     const [editor, set_editor] = useState(false)
     const [data, set_data] = useState(props.data)
 
-    const original_data = props.original_data
     const table_headers = props.table_headers
 
     function ToggleEditor(event) {
@@ -340,112 +338,161 @@ function Form(props) {
 
             // Update props
             set_data(page_data)
-            set_hasChanges(true)
         }
 
         set_editor(!editor)
     }
 
     function resetHandler() {
-        console.log(original_data)
-        set_data(original_data)
+        window.location.reload(true)
     }
 
     // Form submission
-    async function submitHandler(event) {
+    function submitHandler(event) {
         // Get the column names from each table and update data
-        if(hasChanges) {
-            const table_columns = GetColumnNames(table_headers, data)
+        const table_columns = GetColumnNames(table_headers, data)
+        const requests = []
 
-            // Create an array of requests
-            const requests = table_headers.map((table_name, idx) => {
-                const entries = data[table_name]
-                const columns = table_columns[idx]
-                const promises = []
+        // Create an array of requests
+        for (const table_name of table_headers) {
+            const idx = table_headers.indexOf(table_name);
+            const entries = data[table_name]
+            const columns = table_columns[idx]
 
-                // Sets up formatting for requests
-                for (let id = 0; id < entries.length; id++) {
-                    const values = columns.map(column => {
+            // Sets up formatting for requests
+            for (let id = 0; id < entries.length; id++) {
+                const values = columns.map(column => {
 
-                        // Format dates
-                        if (column === 'DATE_STARTED' || column === 'DATE_ENDED') {
-                            return entries[id][column].slice(0, 10)
-                        }
-                        return entries[id][column];
-                    })
+                    // Format dates
+                    if (column === 'DATE_STARTED' || column === 'DATE_ENDED') {
+                        return entries[id][column].slice(0, 10)
+                    }
+                    return entries[id][column];
+                })
 
-                    // Set an array of promises
-                    promises.push(FetchRequest(id, values, columns, table_name, 'PATCH', '/api'))
-                }
-                return promises
-            })
-            // Resolve all requests
-            await Promise.all(requests)
+                // Set an array of promises
+                requests.push(FetchRequest(id, values, columns, table_name, 'PATCH', '/api'))
+            }
         }
+
+        // Send all requests to the server then reload page
+        Promise.all(requests).then(() => window.location.reload(true))
+
         event.preventDefault();
     }
 
     return (
-        <div>
-            <form className='form_container' onDoubleClick={ToggleEditor} onSubmit={submitHandler}>
-                <div className='title_wrapper' id='resume_header'>
-                    <TitleBlock header={data['resume_header']} editor={editor}/>
+
+        <form className='form_container' onDoubleClick={ToggleEditor} onSubmit={submitHandler}>
+            <div className='title_wrapper' id='resume_header'>
+                <TitleBlock header={data['resume_header']} editor={editor}/>
+            </div>
+
+            <div className='left_column' >
+                {/* Experience */}
+                <div className='section_wrapper' id='resume_experience'>
+                    <h2>Experience</h2>
+                    <ExperienceBlock experience={data['resume_experience']} editor={editor}/>
                 </div>
 
-                <div className='left_column' >
-                    {/* Experience */}
-                    <div className='section_wrapper' id='resume_experience'>
-                        <h2>Experience</h2>
-                        <ExperienceBlock experience={data['resume_experience']} editor={editor}/>
-                    </div>
-
-                    {/* Education */}
-                    <div className='section_wrapper' id='resume_education'>
-                        <h2>Education</h2>
-                        <EducationBlock education={data['resume_education'].slice(0, 1)} editor={editor}/>
-                    </div>
-
-                    {/* Certifications */}
-                    <div className='section_wrapper' id='resume_education_certifications'>
-                        <h2>Certifications</h2>
-                        <EducationBlock education={data['resume_education'].slice(1)} editor={editor}/>
-                    </div>
+                {/* Education */}
+                <div className='section_wrapper' id='resume_education'>
+                    <h2>Education</h2>
+                    <EducationBlock education={data['resume_education'].slice(0, 1)} editor={editor}/>
                 </div>
 
-                <div className='right_column'>
-                    <div className='section_wrapper' id='resume_skills'>
-                        <h2>Achievements</h2>
-                        <SkillsAndAttributes achievements={data['resume_skills']} editor={editor} label='resume_skills'/>
-                    </div>
+                {/* Certifications */}
+                <div className='section_wrapper' id='resume_education_certifications'>
+                    <h2>Certifications</h2>
+                    <EducationBlock education={data['resume_education'].slice(1)} editor={editor}/>
+                </div>
+            </div>
 
-                    <div className='section_wrapper'>
-                        <h2>My Time</h2>
-                        <MyTime/>
-                    </div>
-
-                    <div className='section_wrapper'>
-                        <h2>Passions</h2>
-                        <Passions/>
-                    </div>
-
-                    <div className='section_wrapper'>
-                        <h2>Contact Me</h2>
-                        <ContactMe/>
-                    </div>
+            <div className='right_column'>
+                <div className='section_wrapper' id='resume_skills'>
+                    <h2>Achievements</h2>
+                    <SkillsAndAttributes achievements={data['resume_skills']} editor={editor} label='resume_skills'/>
                 </div>
 
-                <div className='button-group'>
-                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
-                    <button type='button' className='btn btn-outline-primary' onClick={resetHandler}>Cancel</button>
+                <div className='section_wrapper'>
+                    <h2>My Time</h2>
+                    <MyTime/>
                 </div>
 
-            </form>
-        </div>
+                <div className='section_wrapper'>
+                    <h2>Passions</h2>
+                    <Passions/>
+                </div>
+
+                <div className='section_wrapper'>
+                    <h2>Contact Me</h2>
+                    <ContactMe/>
+                </div>
+            </div>
+
+            <div className='button-group'>
+                <button type='submit' className='btn btn-outline-primary active'>Submit</button>
+                <button type='button' className='btn btn-outline-primary' onClick={resetHandler}>Cancel</button>
+            </div>
+
+        </form>
+
     )
 }
 
 function Render(props) {
+    const editor = false
+    const data = props.data
 
+    return (
+        <div className='form_container'>
+            <div className='title_wrapper' id='resume_header'>
+                <TitleBlock header={data['resume_header']} editor={editor}/>
+            </div>
+
+            <div className='left_column' >
+                {/* Experience */}
+                <div className='section_wrapper' id='resume_experience'>
+                    <h2>Experience</h2>
+                    <ExperienceBlock experience={data['resume_experience']} editor={editor}/>
+                </div>
+
+                {/* Education */}
+                <div className='section_wrapper' id='resume_education'>
+                    <h2>Education</h2>
+                    <EducationBlock education={data['resume_education'].slice(0, 1)} editor={editor}/>
+                </div>
+
+                {/* Certifications */}
+                <div className='section_wrapper' id='resume_education_certifications'>
+                    <h2>Certifications</h2>
+                    <EducationBlock education={data['resume_education'].slice(1)} editor={editor}/>
+                </div>
+            </div>
+
+            <div className='right_column'>
+                <div className='section_wrapper' id='resume_skills'>
+                    <h2>Achievements</h2>
+                    <SkillsAndAttributes achievements={data['resume_skills']} editor={editor} label='resume_skills'/>
+                </div>
+
+                <div className='section_wrapper'>
+                    <h2>My Time</h2>
+                    <MyTime/>
+                </div>
+
+                <div className='section_wrapper'>
+                    <h2>Passions</h2>
+                    <Passions/>
+                </div>
+
+                <div className='section_wrapper'>
+                    <h2>Contact Me</h2>
+                    <ContactMe/>
+                </div>
+            </div>
+        </div>
+    )
 }
 
 // Main Component
@@ -491,25 +538,18 @@ function FormEditor() {
     }, [table_headers])
 
     // Editor view logic
-    if(editor_view) {
-        set_editor_view(!editor_view)
-    }
+    // if(editor_view) {
+    //     set_editor_view(!editor_view)
+    // }
 
     // Display while fetching data from api
     if (initial_loading_screen) return <InitialRender/>
 
     // Display form view (user admin is logged in)
-    if (!editor_view) return <Form
-        data = {data}
-        original_data = {data}
-        table_headers = {table_headers}
-    />
+    if (editor_view) return <Form data = {data} table_headers = {table_headers}/>
 
     // Render view for all guests
-    return <Render
-        data = {data}
-        table_headers = {table_headers}
-    />
+    return <Render data = {data}/>
 }
 
 export default FormEditor;
