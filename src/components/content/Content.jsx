@@ -20,7 +20,6 @@ import { ArcElement, Chart as ChartJS, Legend } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
 
 // Helper functions
-import { DisplayEntryBlock, GetColumnNames, GetPageData, SendPageData } from './HelperFunction';
 
 // Required for chart
 ChartJS.register(ArcElement, Legend, ChartDataLabels)
@@ -156,6 +155,47 @@ function ContactMe() {
     )
 }
 
+// Functions that should be added to the HelperFunction folder
+function GetColumnNames(table_headers, data) {
+   return table_headers.map(header => {
+        return Object.keys(data[header][0]).slice(1)
+    })
+}
+function GetFormPageData(table_headers, column_names, data, event) {
+    let page_data = data
+
+    column_names.forEach((subsection, idx) => {
+        // Get the values from each subsection
+        const subsection_data = subsection.map(header => {
+            const form = event.target.form
+            const container = form.querySelector(`[id^=${table_headers[idx]}]`)
+
+            return Array.from(container.querySelectorAll(`[id^=${header}]`), ({ value }) => value)
+        })
+
+        // Update values
+        subsection_data.forEach((values, index) => {
+            for (let i = 0; i < values.length; i++) {
+                page_data[`${table_headers[idx]}`][i][`${subsection[index]}`] = values[i]
+            }
+        })
+    })
+
+    return page_data
+}
+async function FetchRequest(id, values, cols, table_name, method, path) {
+    await fetch(path, {
+        method: method,
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            table: table_name,
+            id: id,
+            values: values,
+            cols: cols
+        })
+    })
+}
+
 // Components
 function Editor(props) {
     const id = `${props.form_id}`
@@ -168,12 +208,12 @@ function Editor(props) {
     )
 }
 function TitleBlock(props) {
-    const [header, set_header] = useState(props.header)
+    const [header] = useState(props.header)
 
     // Editor View
     const display_editor = header.map((subsection, idx) => {
         return (
-            <div key={`Header_${idx}`}>
+            <div key={`resume_header_${idx}`}>
                 <Editor content={subsection['TITLE']} form_id='TITLE' className='title' rows={1}/>
                 <Editor content={subsection['SUBTITLE']} form_id='SUBTITLE' className='subtitle' rows={1}/>
                 <Editor content={subsection['OBJECTIVE']} form_id='OBJECTIVE' className='objective' rows={6}/>
@@ -184,7 +224,7 @@ function TitleBlock(props) {
     // Normal View
     const display_render = header.map((subsection, idx) => {
         return (
-            <div key={`Header_${idx}`}>
+            <div key={`resume_header_${idx}`}>
                 <h1>{subsection['TITLE']}</h1>
                 <h2>{subsection['SUBTITLE']}</h2>
                 <p>{subsection['OBJECTIVE']}</p>
@@ -195,11 +235,11 @@ function TitleBlock(props) {
     return (props.editor) ? display_editor : display_render
 }
 function ExperienceBlock(props) {
-    const [experience, set_experience] = useState(props.experience)
+    const [experience] = useState(props.experience)
 
     const display_editor = experience.map((subsection, idx) => {
         return (
-            <div key={`Experience_${idx}`}>
+            <div key={`resume_experience_${idx}`}>
                 <Editor content={subsection['JOB_TITLE']} form_id='JOB_TITLE' className='job_title' rows={1}/>
                 <Editor content={subsection['JOB_DESCRIPTION']} form_id='JOB_DESCRIPTION' className='job_description' rows={6}/>
                 <Editor content={subsection['JOB_LOCATION']} form_id='JOB_LOCATION' className='job_location' rows={1}/>
@@ -213,7 +253,7 @@ function ExperienceBlock(props) {
 
     const display_render = experience.map((subsection, idx) => {
         return (
-            <div key={`Experience_${idx}`}>
+            <div key={`resume_experience_${idx}`}>
                 <h3>{subsection['JOB_TITLE']}</h3>
                 <h4>{subsection['JOB_EMPLOYER']}</h4>
                 <p>{subsection['DATE_STARTED']} - {subsection['DATE_ENDED']}</p>
@@ -228,11 +268,11 @@ function ExperienceBlock(props) {
 
 }
 function EducationBlock(props) {
-    const [education, set_education] = useState(props.education)
+    const [education] = useState(props.education)
 
     const display_editor = education.map((subsection, idx) => {
         return (
-            <div key={`Education_${idx}`}>
+            <div key={`resume_education${idx}`}>
                 <Editor content={subsection['DEGREE']} form_id='DEGREE' className='degree'/>
                 <Editor content={subsection['SCHOOL']} form_id='SCHOOL' className='school'/>
                 <Editor content={subsection['DATE_STARTED']} form_id='DATE_STARTED' className='date_started'/>
@@ -243,7 +283,7 @@ function EducationBlock(props) {
 
     const display_render = education.map((subsection, idx) => {
         return (
-            <div key={`Education_${idx}`}>
+            <div key={`resume_education${idx}`}>
                 <h3>{subsection['DEGREE']}</h3>
                 <h4>{subsection['SCHOOL']}</h4>
                 <p>{subsection['DATE_STARTED']} - {subsection['DATE_ENDED']}</p>
@@ -254,7 +294,7 @@ function EducationBlock(props) {
     return (props.editor) ? display_editor : display_render
 }
 function SkillsAndAttributes(props) {
-    const [achievements, set_achievements] = useState(props.achievements)
+    const [achievements] = useState(props.achievements)
     const icon_list = [
         <FaCode/>, <FaBolt/>, <FaGalacticRepublic/>
     ]
@@ -285,54 +325,69 @@ function SkillsAndAttributes(props) {
 
 // Display Components
 function Form(props) {
-    const [table_headers] = useState(props.table_headers)
-    const [data, set_data] = useState(props.data)
+    const [hasChanges, set_hasChanges] = useState(false)
     const [editor, set_editor] = useState(false)
+    const [data, set_data] = useState(props.data)
+
+    const original_data = props.original_data
+    const table_headers = props.table_headers
 
     function ToggleEditor(event) {
         if(editor) {
-            let page_data = data
-
             // Get the column names from each table
-            const column_names = table_headers.map(header => {
-                return Object.keys(data[header][0]).slice(1)
-            })
+            const column_names = GetColumnNames(table_headers, data)
+            const page_data = GetFormPageData(table_headers, column_names, data, event)
 
-            // Get all values associated with its respective div
-            column_names.map((subsection, idx) => {
-                const subsection_data = subsection.map(header => {
-                    const form = event.target.form
-                    const container = form.querySelector(`[id^=${table_headers[idx]}]`)
-
-                    return Array.from(container.querySelectorAll(`[id^=${header}]`), ({ value }) => value)
-                })
-
-                // Update values
-                subsection_data.map((values, index) => {
-                    for (let i = 0; i < values.length; i++) {
-                        page_data[`${table_headers[idx]}`][i][`${subsection[index]}`] = values[i]
-                    }
-                })
-            })
-
+            // Update props
             set_data(page_data)
+            set_hasChanges(true)
         }
 
         set_editor(!editor)
     }
 
+    function resetHandler() {
+        console.log(original_data)
+        set_data(original_data)
+    }
+
     // Form submission
     async function submitHandler(event) {
-        const table_columns = GetColumnNames(data)
-        const raw_page_data = GetPageData(event, table_columns)
+        // Get the column names from each table and update data
+        if(hasChanges) {
+            const table_columns = GetColumnNames(table_headers, data)
 
-        await SendPageData(raw_page_data, table_headers, table_columns, '/api')
+            // Create an array of requests
+            const requests = table_headers.map((table_name, idx) => {
+                const entries = data[table_name]
+                const columns = table_columns[idx]
+                const promises = []
+
+                // Sets up formatting for requests
+                for (let id = 0; id < entries.length; id++) {
+                    const values = columns.map(column => {
+
+                        // Format dates
+                        if (column === 'DATE_STARTED' || column === 'DATE_ENDED') {
+                            return entries[id][column].slice(0, 10)
+                        }
+                        return entries[id][column];
+                    })
+
+                    // Set an array of promises
+                    promises.push(FetchRequest(id, values, columns, table_name, 'PATCH', '/api'))
+                }
+                return promises
+            })
+            // Resolve all requests
+            await Promise.all(requests)
+        }
         event.preventDefault();
     }
 
     return (
         <div>
-            <form className='form_container' onDoubleClick={ToggleEditor}>
+            <form className='form_container' onDoubleClick={ToggleEditor} onSubmit={submitHandler}>
                 <div className='title_wrapper' id='resume_header'>
                     <TitleBlock header={data['resume_header']} editor={editor}/>
                 </div>
@@ -378,10 +433,17 @@ function Form(props) {
                         <ContactMe/>
                     </div>
                 </div>
+
+                <div className='button-group'>
+                    <button type='submit' className='btn btn-outline-primary active'>Submit</button>
+                    <button type='button' className='btn btn-outline-primary' onClick={resetHandler}>Cancel</button>
+                </div>
+
             </form>
         </div>
     )
 }
+
 function Render(props) {
 
 }
@@ -391,6 +453,7 @@ function FormEditor() {
     // Initializing state variables
     const [table_headers] = useState(['resume_header', 'resume_skills', 'resume_experience', 'resume_education'])
     const [initial_loading_screen, set_initial_loading_screen] = useState(true)
+    const [editor_view, set_editor_view] = useState(false)
     const [data, set_data] = useState([])
 
     // API request
@@ -427,11 +490,26 @@ function FormEditor() {
 
     }, [table_headers])
 
-    // Display while fetching data from api
-    if (initial_loading_screen) return <InitialRender />
+    // Editor view logic
+    if(editor_view) {
+        set_editor_view(!editor_view)
+    }
 
-    // Form
-    return <Form data={data} table_headers={table_headers}/>
+    // Display while fetching data from api
+    if (initial_loading_screen) return <InitialRender/>
+
+    // Display form view (user admin is logged in)
+    if (!editor_view) return <Form
+        data = {data}
+        original_data = {data}
+        table_headers = {table_headers}
+    />
+
+    // Render view for all guests
+    return <Render
+        data = {data}
+        table_headers = {table_headers}
+    />
 }
 
 export default FormEditor;
